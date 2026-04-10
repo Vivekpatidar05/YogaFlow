@@ -1,33 +1,25 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Star, CheckCircle2, ChevronRight } from 'lucide-react'
+import { ArrowRight, Star, CheckCircle2, ChevronRight, Leaf } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import SessionCard from '../components/SessionCard'
 
-const STATS = [
-  { value: '2,400+', label: 'Active Members' },
-  { value: '42',     label: 'Sessions / Week' },
-  { value: '8',      label: 'Instructors' },
-  { value: '4.9★',  label: 'Avg. Rating' },
+const STATS  = [{ v: '2,400+', l: 'Members' }, { v: '42', l: 'Sessions/Week' }, { v: '8', l: 'Instructors' }, { v: '4.9★', l: 'Avg Rating' }]
+const STEPS  = [
+  { n:'01', t:'Create Account',    d:'Sign up free in 60 seconds. Email verification included.' },
+  { n:'02', t:'Browse & Choose',   d:'Filter by style, instructor, level, or date.' },
+  { n:'03', t:'Book & Confirm',    d:'Instant confirmation + email with all details.' },
 ]
-
-const STEPS = [
-  { n: '01', title: 'Create Account', desc: 'Sign up free in 60 seconds. Email verification included.' },
-  { n: '02', title: 'Browse & Choose', desc: 'Filter by style, level, instructor, or schedule.' },
-  { n: '03', title: 'Book & Receive', desc: 'Instant confirmation email with all session details.' },
+const FEATS  = [
+  { e:'🗓', t:'Live availability',      d:'Real-time spot counts — book before it fills up.' },
+  { e:'📧', t:'Instant confirmation',   d:'Full booking details sent to your inbox immediately.' },
+  { e:'⏰', t:'24h reminders',          d:'Automatic reminder email the day before your session.' },
+  { e:'↩️', t:'Free cancellations',     d:'Cancel up to 2 hours before for a full refund.' },
 ]
-
-const TESTIMONIALS = [
-  { name: 'Anjali K.', role: 'Member since 2023', rating: 5, text: 'YogaFlow transformed my mornings. The booking system is seamless and the instructors are world-class.' },
-  { name: 'Rohan M.', role: 'Beginner Student', rating: 5, text: "The class descriptions and level tags made it so easy to find the right session as a complete beginner." },
-  { name: 'Divya S.', role: 'Advanced Practitioner', rating: 5, text: 'The Ashtanga series is exactly what I needed. Reminder emails keep me accountable every week.' },
-]
-
-const FEATURES = [
-  { icon: '◈', title: 'Real-time Availability', desc: 'See live spot counts. Book before sessions fill up.' },
-  { icon: '◉', title: 'Email Confirmations', desc: 'Full booking details, location, and what to bring — instantly.' },
-  { icon: '◎', title: 'Smart Reminders', desc: 'Automatic 24-hour reminder before every session.' },
-  { icon: '◈', title: 'Free Cancellations', desc: 'Cancel up to 2 hours before for a full refund.' },
+const TESTI  = [
+  { n:'Anjali K.',  r:'Member since 2023',    s:5, t:'YogaFlow completely transformed my mornings. Booking is seamless and instructors are world-class.' },
+  { n:'Rohan M.',   r:'Beginner Student',     s:5, t:'Level tags and instructor bios made it so easy to find the right session as a total beginner.' },
+  { n:'Divya S.',   r:'Advanced Practitioner',s:5, t:'The Ashtanga series is exactly what I needed. Reminder emails keep me accountable every week.' },
 ]
 
 export default function Landing() {
@@ -39,62 +31,56 @@ export default function Landing() {
   }, [])
 
   return (
-    <div className="pt-16 bg-base">
+    <div className="pt-16" style={{ background: 'var(--bg)' }}>
 
-      {/* ── Hero ──────────────────────────────────────────────── */}
-      <section className="relative min-h-[95vh] flex items-center overflow-hidden">
-        {/* Background image overlay */}
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="relative min-h-[92vh] flex items-center overflow-hidden">
+        {/* Background */}
         <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1800&auto=format&q=80"
-            alt=""
-            className="w-full h-full object-cover"
-            style={{opacity: 0.12}}
-          />
-          <div className="absolute inset-0" style={{
-            background: 'radial-gradient(ellipse at 30% 50%, rgba(201,168,76,0.06) 0%, transparent 70%), linear-gradient(180deg, #0a0a0a 0%, transparent 30%, transparent 70%, #0a0a0a 100%)'
-          }} />
+          <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1800&auto=format&q=80"
+            alt="" className="w-full h-full object-cover" style={{ opacity: 0.18 }} />
+          <div className="absolute inset-0"
+            style={{ background: 'linear-gradient(135deg, rgba(240,247,236,0.97) 0%, rgba(240,247,236,0.85) 60%, rgba(240,247,236,0.7) 100%)' }} />
         </div>
 
-        {/* Decorative gold orb */}
-        <div className="absolute top-1/4 right-1/4 w-96 h-96 rounded-full pointer-events-none"
-          style={{background: 'radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%)'}} />
+        {/* Decorative shapes */}
+        <div className="absolute top-20 right-0 w-80 h-80 rounded-full pointer-events-none opacity-30"
+          style={{ background: 'radial-gradient(circle, #B5D98A 0%, transparent 70%)', transform: 'translateX(30%)' }} />
+        <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full pointer-events-none opacity-20"
+          style={{ background: 'radial-gradient(circle, #C4502A 0%, transparent 70%)', transform: 'translate(-30%, 30%)' }} />
 
-        <div className="page-container relative z-10 py-28">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium mb-8 border"
-              style={{background:'rgba(201,168,76,0.08)', borderColor:'rgba(201,168,76,0.2)', color:'var(--gold)'}}>
-              <span className="w-1.5 h-1.5 rounded-full bg-gold-500 animate-pulse-gold" />
-              Dehradun's Premier Yoga Studio
+        <div className="page-container relative z-10 py-24">
+          <div className="max-w-2xl">
+            {/* Pill badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6 border"
+              style={{ background: '#EAF4E0', borderColor: '#B5D98A', color: 'var(--primary)' }}>
+              <Leaf size={12} /> Dehradun's Premier Yoga Studio
             </div>
 
-            <h1 className="font-display text-6xl md:text-8xl font-normal text-[#e8e8e8] leading-[1.05] mb-6">
-              Find Your
-              <span className="block italic text-gradient-gold">Balance.</span>
+            <h1 className="font-display text-5xl md:text-7xl font-normal leading-[1.08] mb-6"
+              style={{ color: 'var(--text)' }}>
+              Find Your<br />
+              <em className="italic" style={{ color: 'var(--primary)' }}>Balance.</em>
             </h1>
 
-            <p className="text-lg text-[#777] leading-relaxed mb-10 max-w-xl">
+            <p className="text-lg leading-relaxed mb-8 max-w-md" style={{ color: 'var(--muted)' }}>
               Book expert-led yoga sessions online. Hatha, Vinyasa, Yin, Kundalini and more —
               every level, seven days a week.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-12">
-              <Link to="/sessions"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm transition-all hover:-translate-y-0.5"
-                style={{background:'var(--gold)', color:'#0a0a0a'}}>
-                Browse Sessions <ArrowRight size={16}/>
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+              <Link to="/sessions" className="btn-primary px-8 py-4 text-base">
+                Browse Sessions <ArrowRight size={18} />
               </Link>
-              <Link to="/signup"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm border transition-all"
-                style={{border:'1px solid var(--border2)', color:'var(--text)'}}>
+              <Link to="/signup" className="btn-outline px-8 py-4 text-base">
                 Create Free Account
               </Link>
             </div>
 
             <div className="flex flex-wrap gap-5">
               {['No booking fees', 'Free cancellation', 'Email confirmations', 'All skill levels'].map(t => (
-                <span key={t} className="flex items-center gap-1.5 text-xs" style={{color:'#555'}}>
-                  <CheckCircle2 size={12} style={{color:'var(--gold)'}} /> {t}
+                <span key={t} className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--muted)' }}>
+                  <CheckCircle2 size={14} style={{ color: 'var(--primary)' }} /> {t}
                 </span>
               ))}
             </div>
@@ -102,112 +88,111 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Stats ─────────────────────────────────────────────── */}
-      <section className="border-y" style={{borderColor:'var(--border)', background:'var(--surface)'}}>
-        <div className="page-container py-10">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {STATS.map(({ value, label }) => (
-              <div key={label} className="text-center">
-                <div className="font-display text-3xl font-semibold text-gradient-gold mb-1">{value}</div>
-                <div className="text-xs uppercase tracking-widest" style={{color:'var(--muted)'}}>{label}</div>
+      {/* ── Stats bar ─────────────────────────────────────────────────── */}
+      <section style={{ background: 'var(--primary)', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="page-container py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {STATS.map(({ v, l }) => (
+              <div key={l} className="text-center">
+                <div className="font-display text-3xl font-semibold text-white mb-0.5">{v}</div>
+                <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.6)' }}>{l}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Sessions ──────────────────────────────────────────── */}
-      <section className="py-24">
+      {/* ── Featured Sessions ─────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: 'var(--bg)' }}>
         <div className="page-container">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <p className="section-eyebrow mb-3">What We Offer</p>
-              <h2 className="font-display text-4xl md:text-5xl font-normal text-[#e8e8e8]">
-                Popular Sessions
-              </h2>
+              <p className="eyebrow mb-3">What We Offer</p>
+              <h2 className="font-display text-4xl font-semibold" style={{ color: 'var(--text)' }}>Popular Sessions</h2>
             </div>
-            <Link to="/sessions"
-              className="hidden md:flex items-center gap-1 text-sm font-medium transition-colors"
-              style={{color:'var(--muted)'}}>
-              View all <ChevronRight size={14}/>
+            <Link to="/sessions" className="hidden md:flex items-center gap-1 text-sm font-medium hover:underline"
+              style={{ color: 'var(--primary)' }}>
+              View all <ChevronRight size={14} />
             </Link>
           </div>
 
           {loading ? (
-            <div className="grid md:grid-cols-3 gap-6">
-              {[1,2,3].map(i => <div key={i} className="skeleton h-80" />)}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1,2,3].map(i => <div key={i} className="skeleton h-96" />)}
             </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-6">
-              {sessions.map(s => <SessionCard key={s._id} session={s}/>)}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {sessions.map(s => <SessionCard key={s._id} session={s} />)}
             </div>
           )}
 
           <div className="text-center mt-10">
-            <Link to="/sessions" className="btn-outline gap-2">
-              View All Sessions <ArrowRight size={15}/>
-            </Link>
+            <Link to="/sessions" className="btn-outline px-8">View All Sessions <ArrowRight size={15} /></Link>
           </div>
         </div>
       </section>
 
-      {/* ── How it works ──────────────────────────────────────── */}
-      <section className="py-24 border-t" style={{borderColor:'var(--border)', background:'var(--surface)'}}>
+      {/* ── How it works ──────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: 'var(--surface2)' }}>
         <div className="page-container">
           <div className="text-center mb-16">
-            <p className="section-eyebrow mb-3">Simple Process</p>
-            <h2 className="font-display text-4xl font-normal text-[#e8e8e8]">Book in 3 Steps</h2>
+            <p className="eyebrow mb-3">Simple Process</p>
+            <h2 className="font-display text-4xl font-semibold" style={{ color: 'var(--text)' }}>Book in 3 Steps</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-10 relative">
-            {STEPS.map(({ n, title, desc }) => (
-              <div key={n} className="relative">
-                <div className="font-display text-8xl font-bold leading-none mb-4 select-none"
-                  style={{color:'rgba(201,168,76,0.08)'}}>
+            {/* Connecting line */}
+            <div className="hidden md:block absolute top-8 left-1/3 right-1/3 h-0.5" style={{ background: 'var(--border2)' }} />
+            {STEPS.map(({ n, t, d }) => (
+              <div key={n} className="relative text-center">
+                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-bold font-display relative z-10"
+                  style={{ background: '#EAF4E0', color: 'var(--primary)', border: '2px solid #B5D98A' }}>
                   {n}
                 </div>
-                <div className="w-8 h-px mb-4" style={{background:'var(--gold)'}} />
-                <h3 className="font-display text-xl font-semibold text-[#e8e8e8] mb-2">{title}</h3>
-                <p className="text-sm leading-relaxed" style={{color:'var(--muted)'}}>{desc}</p>
+                <h3 className="font-display text-xl font-semibold mb-2" style={{ color: 'var(--text)' }}>{t}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{d}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Features ──────────────────────────────────────────── */}
-      <section className="py-24">
+      {/* ── Features ──────────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: 'var(--bg)' }}>
         <div className="page-container">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div>
-              <p className="section-eyebrow mb-4">Why YogaFlow</p>
-              <h2 className="font-display text-4xl font-normal text-[#e8e8e8] mb-8 leading-snug">
-                Everything You Need<br />
-                <em className="font-normal italic" style={{color:'var(--gold)'}}>in One Place</em>
+              <p className="eyebrow mb-4">Why YogaFlow</p>
+              <h2 className="font-display text-4xl font-semibold mb-8 leading-snug" style={{ color: 'var(--text)' }}>
+                Everything You Need,<br />
+                <em className="italic font-normal" style={{ color: 'var(--primary)' }}>in One Place</em>
               </h2>
-              <div className="space-y-6">
-                {FEATURES.map(({ icon, title, desc }) => (
-                  <div key={title} className="flex gap-4">
-                    <div className="text-xl shrink-0 mt-0.5" style={{color:'var(--gold)'}}>{icon}</div>
+              <div className="space-y-5">
+                {FEATS.map(({ e, t, d }) => (
+                  <div key={t} className="flex gap-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                      style={{ background: '#EAF4E0' }}>
+                      {e}
+                    </div>
                     <div>
-                      <h4 className="font-medium text-[#e8e8e8] mb-1 text-sm">{title}</h4>
-                      <p className="text-sm leading-relaxed" style={{color:'var(--muted)'}}>{desc}</p>
+                      <h4 className="font-semibold text-sm mb-1" style={{ color: 'var(--text)' }}>{t}</h4>
+                      <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>{d}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
             <div className="relative">
-              <div className="aspect-[4/5] rounded-3xl overflow-hidden">
+              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-xl">
                 <img src="https://images.unsplash.com/photo-1545389336-cf090694435e?w=700&auto=format&q=80"
-                  alt="Yoga session" className="w-full h-full object-cover" style={{opacity:0.7}} />
+                  alt="Yoga session" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute -bottom-4 -left-4 rounded-2xl border p-4 flex items-center gap-3"
-                style={{background:'var(--surface2)', borderColor:'var(--border2)'}}>
+              {/* Floating card */}
+              <div className="absolute -bottom-4 -left-4 card shadow-card-hover px-4 py-3 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0"
-                  style={{background:'rgba(201,168,76,0.15)', color:'var(--gold)'}}>✓</div>
+                  style={{ background: '#EAF4E0' }}>✓</div>
                 <div>
-                  <p className="text-xs font-semibold text-[#e8e8e8]">Booking Confirmed!</p>
-                  <p className="text-xs" style={{color:'var(--muted)'}}>Check your inbox</p>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Booking Confirmed!</p>
+                  <p className="text-xs" style={{ color: 'var(--muted)' }}>Check your inbox</p>
                 </div>
               </div>
             </div>
@@ -215,23 +200,23 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Testimonials ──────────────────────────────────────── */}
-      <section className="py-24 border-t" style={{borderColor:'var(--border)', background:'var(--surface)'}}>
+      {/* ── Testimonials ──────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: 'var(--surface2)' }}>
         <div className="page-container">
           <div className="text-center mb-12">
-            <p className="section-eyebrow mb-3">Community</p>
-            <h2 className="font-display text-4xl font-normal text-[#e8e8e8]">What Students Say</h2>
+            <p className="eyebrow mb-3">Community</p>
+            <h2 className="font-display text-4xl font-semibold" style={{ color: 'var(--text)' }}>What Students Say</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map(({ name, role, rating, text }) => (
-              <div key={name} className="card p-6">
+            {TESTI.map(({ n, r, s, t }) => (
+              <div key={n} className="card p-6">
                 <div className="flex gap-0.5 mb-4">
-                  {[...Array(rating)].map((_, i) => <Star key={i} size={13} style={{fill:'var(--gold)', color:'var(--gold)'}} />)}
+                  {[...Array(s)].map((_, i) => <Star key={i} size={14} style={{ fill: '#F59E0B', color: '#F59E0B' }} />)}
                 </div>
-                <p className="text-sm leading-relaxed mb-5 italic" style={{color:'#999'}}>"{text}"</p>
+                <p className="text-sm leading-relaxed italic mb-5" style={{ color: 'var(--muted)' }}>"{t}"</p>
                 <div>
-                  <p className="text-sm font-medium text-[#e8e8e8]">{name}</p>
-                  <p className="text-xs" style={{color:'var(--muted)'}}>{role}</p>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--text)' }}>{n}</p>
+                  <p className="text-xs" style={{ color: 'var(--faint)' }}>{r}</p>
                 </div>
               </div>
             ))}
@@ -239,29 +224,30 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── CTA ───────────────────────────────────────────────── */}
-      <section className="py-24">
+      {/* ── CTA ───────────────────────────────────────────────────────── */}
+      <section className="py-24" style={{ background: 'var(--bg)' }}>
         <div className="page-container">
-          <div className="relative rounded-3xl overflow-hidden border p-16 text-center"
-            style={{background:'var(--surface2)', borderColor:'rgba(201,168,76,0.2)'}}>
-            <div className="absolute inset-0 pointer-events-none"
-              style={{background:'radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.06) 0%, transparent 70%)'}} />
-            <p className="section-eyebrow mb-4 relative z-10">Ready?</p>
-            <h2 className="font-display text-4xl md:text-5xl font-normal text-[#e8e8e8] mb-4 relative z-10">
-              Begin Your Journey Today
+          <div className="relative rounded-3xl overflow-hidden p-12 md:p-16 text-center"
+            style={{ background: 'var(--primary)' }}>
+            <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10"
+              style={{ background: 'radial-gradient(circle, #ffffff 0%, transparent 70%)', transform: 'translate(30%, -30%)' }} />
+            <p className="text-sm font-bold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>
+              Ready to Begin?
+            </p>
+            <h2 className="font-display text-4xl md:text-5xl font-semibold text-white mb-4">
+              Start Your Journey Today
             </h2>
-            <p className="mb-8 max-w-md mx-auto text-sm relative z-10" style={{color:'var(--muted)'}}>
+            <p className="mb-8 max-w-sm mx-auto text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
               Join thousands of practitioners. Your first session is waiting.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center relative z-10">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/signup"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm transition-all hover:-translate-y-0.5"
-                style={{background:'var(--gold)', color:'#0a0a0a'}}>
-                Create Free Account <ArrowRight size={15}/>
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm bg-white transition-all hover:-translate-y-0.5"
+                style={{ color: 'var(--primary)' }}>
+                Create Free Account <ArrowRight size={16} />
               </Link>
               <Link to="/sessions"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm border transition-all"
-                style={{border:'1px solid var(--border2)', color:'var(--text)'}}>
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-semibold text-sm border-2 border-white/30 text-white transition-all hover:bg-white/10">
                 Browse Sessions
               </Link>
             </div>

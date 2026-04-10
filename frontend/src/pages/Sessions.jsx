@@ -4,12 +4,12 @@ import api from '../api/axios'
 import SessionCard from '../components/SessionCard'
 
 export default function Sessions() {
-  const [sessions, setSessions] = useState([])
-  const [filters, setFilters] = useState({ type: '', level: '', search: '' })
-  const [types, setTypes] = useState([])
-  const [levels, setLevels] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [showFilters, setShowFilters] = useState(false)
+  const [sessions, setSessions]   = useState([])
+  const [filters, setFilters]     = useState({ type: '', level: '', search: '' })
+  const [types, setTypes]         = useState([])
+  const [levels, setLevels]       = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [showFilters, setShowF]   = useState(false)
   const [pagination, setPagination] = useState({})
 
   useEffect(() => {
@@ -19,11 +19,11 @@ export default function Sessions() {
   const fetchSessions = useCallback(async () => {
     setLoading(true)
     try {
-      const params = new URLSearchParams()
-      if (filters.type)   params.append('type', filters.type)
-      if (filters.level)  params.append('level', filters.level)
-      if (filters.search) params.append('search', filters.search)
-      const { data } = await api.get(`/sessions?${params}`)
+      const p = new URLSearchParams()
+      if (filters.type)   p.append('type', filters.type)
+      if (filters.level)  p.append('level', filters.level)
+      if (filters.search) p.append('search', filters.search)
+      const { data } = await api.get(`/sessions?${p}`)
       setSessions(data.sessions)
       setPagination(data.pagination)
     } catch {}
@@ -32,67 +32,75 @@ export default function Sessions() {
 
   useEffect(() => { const t = setTimeout(fetchSessions, 300); return () => clearTimeout(t) }, [fetchSessions])
 
-  const setFilter = (k, v) => setFilters(f => ({ ...f, [k]: v }))
-  const clearFilters = () => setFilters({ type: '', level: '', search: '' })
+  const sf = (k, v) => setFilters(f => ({ ...f, [k]: v }))
+  const clear = () => setFilters({ type: '', level: '', search: '' })
   const hasFilters = filters.type || filters.level || filters.search
 
   return (
-    <div className="pt-24 pb-20 min-h-screen" style={{background:'var(--bg)'}}>
+    <div className="pt-20 pb-20" style={{ background: 'var(--bg)' }}>
       <div className="page-container">
 
-        {/* Header */}
-        <div className="mb-10 pt-4">
-          <p className="section-eyebrow mb-3">Explore</p>
-          <div className="flex items-end justify-between">
-            <h1 className="font-display text-4xl md:text-5xl font-normal text-[#e8e8e8]">Browse Sessions</h1>
-            <p className="text-sm pb-1" style={{color:'var(--muted)'}}>{pagination.total || 0} available</p>
+        {/* Page header */}
+        <div className="py-8 mb-4">
+          <p className="eyebrow mb-2">Explore</p>
+          <div className="flex items-end justify-between flex-wrap gap-3">
+            <h1 className="font-display text-4xl md:text-5xl font-semibold" style={{ color: 'var(--text)' }}>
+              Browse Sessions
+            </h1>
+            <p className="text-sm pb-1" style={{ color: 'var(--muted)' }}>
+              {pagination.total || 0} sessions available
+            </p>
           </div>
         </div>
 
-        {/* Search bar */}
-        <div className="flex gap-3 mb-6 flex-wrap">
-          <div className="relative flex-1 min-w-60">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{color:'var(--faint)'}} />
-            <input type="text" className="input-field pl-10 h-11 text-sm"
-              placeholder="Search sessions, instructors..."
-              value={filters.search} onChange={e => setFilter('search', e.target.value)} />
+        {/* Search + Filter */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-5">
+          <div className="relative flex-1">
+            <Search size={15} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--faint)' }} />
+            <input type="text" className="input-field pl-11 h-12"
+              placeholder="Search by name, instructor, type…"
+              value={filters.search} onChange={e => sf('search', e.target.value)} />
             {filters.search && (
-              <button onClick={() => setFilter('search', '')}
-                className="absolute right-3 top-1/2 -translate-y-1/2" style={{color:'var(--muted)'}}>
-                <X size={14}/>
+              <button onClick={() => sf('search', '')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100"
+                style={{ color: 'var(--faint)' }}>
+                <X size={14} />
               </button>
             )}
           </div>
 
-          <button onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 h-11 rounded-lg border text-sm font-medium transition-all"
+          <button onClick={() => setShowF(!showFilters)}
+            className="flex items-center justify-center gap-2 px-5 h-12 rounded-xl border-2 text-sm font-semibold transition-all"
             style={{
-              borderColor: (showFilters || hasFilters) ? 'var(--gold)' : 'var(--border2)',
-              color: (showFilters || hasFilters) ? 'var(--gold)' : 'var(--muted)',
-              background: (showFilters || hasFilters) ? 'rgba(201,168,76,0.06)' : 'transparent'
+              borderColor: showFilters || hasFilters ? 'var(--primary)' : 'var(--border2)',
+              color: showFilters || hasFilters ? 'var(--primary)' : 'var(--muted)',
+              background: showFilters || hasFilters ? 'rgba(44,95,46,0.05)' : 'transparent',
             }}>
-            <SlidersHorizontal size={14}/> Filters
-            {hasFilters && <span className="w-4 h-4 rounded-full text-xs flex items-center justify-center"
-              style={{background:'var(--gold)', color:'#0a0a0a', fontSize:'10px'}}>!</span>}
+            <SlidersHorizontal size={15} />
+            Filters
+            {hasFilters && (
+              <span className="w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-white"
+                style={{ background: 'var(--terra)', fontSize: 10 }}>!</span>
+            )}
           </button>
 
           {hasFilters && (
-            <button onClick={clearFilters}
-              className="flex items-center gap-1.5 px-3 h-11 text-sm rounded-lg transition-colors"
-              style={{color:'#f87171'}}>
-              <X size={13}/> Clear
+            <button onClick={clear}
+              className="flex items-center gap-1.5 px-4 h-12 rounded-xl text-sm font-medium transition-colors hover:bg-red-50"
+              style={{ color: '#C0392B' }}>
+              <X size={13} /> Clear
             </button>
           )}
         </div>
 
         {/* Filter panel */}
         {showFilters && (
-          <div className="card p-5 mb-6">
+          <div className="card p-5 mb-5 shadow-card">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <label className="label">Session Type</label>
                 <select className="input-field text-sm" value={filters.type}
-                  onChange={e => setFilter('type', e.target.value)}>
+                  onChange={e => sf('type', e.target.value)}>
                   <option value="">All Types</option>
                   {types.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -100,7 +108,7 @@ export default function Sessions() {
               <div>
                 <label className="label">Level</label>
                 <select className="input-field text-sm" value={filters.level}
-                  onChange={e => setFilter('level', e.target.value)}>
+                  onChange={e => sf('level', e.target.value)}>
                   <option value="">All Levels</option>
                   {levels.map(l => <option key={l} value={l}>{l}</option>)}
                 </select>
@@ -109,39 +117,39 @@ export default function Sessions() {
           </div>
         )}
 
-        {/* Type quick-filters */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-8">
-          <Pill label="All" active={!filters.type} onClick={() => setFilter('type', '')} />
+        {/* Type quick-filter chips */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-6">
+          <Chip label="All" active={!filters.type} onClick={() => sf('type', '')} />
           {types.map(t => (
-            <Pill key={t} label={t} active={filters.type === t}
-              onClick={() => setFilter('type', filters.type === t ? '' : t)} />
+            <Chip key={t} label={t} active={filters.type === t}
+              onClick={() => sf('type', filters.type === t ? '' : t)} />
           ))}
         </div>
 
-        {/* Active pills */}
+        {/* Active filter pills */}
         {hasFilters && (
-          <div className="flex flex-wrap gap-2 mb-6">
-            {filters.type  && <ActivePill label={`Type: ${filters.type}`}  onRemove={() => setFilter('type', '')} />}
-            {filters.level && <ActivePill label={`Level: ${filters.level}`} onRemove={() => setFilter('level', '')} />}
-            {filters.search && <ActivePill label={`"${filters.search}"`}    onRemove={() => setFilter('search', '')} />}
+          <div className="flex flex-wrap gap-2 mb-5">
+            {filters.type  && <ActivePill label={`Type: ${filters.type}`}  onRemove={() => sf('type', '')} />}
+            {filters.level && <ActivePill label={`Level: ${filters.level}`} onRemove={() => sf('level', '')} />}
+            {filters.search && <ActivePill label={`"${filters.search}"`}   onRemove={() => sf('search', '')} />}
           </div>
         )}
 
-        {/* Grid */}
+        {/* Results */}
         {loading ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1,2,3,4,5,6].map(i => <div key={i} className="skeleton h-96" />)}
           </div>
         ) : sessions.length === 0 ? (
-          <div className="text-center py-24 card">
-            <div className="text-4xl mb-4">🧘</div>
-            <h3 className="font-display text-xl text-[#e8e8e8] mb-2">No sessions found</h3>
-            <p className="text-sm mb-5" style={{color:'var(--muted)'}}>Try adjusting your filters.</p>
-            <button onClick={clearFilters} className="btn-outline text-sm">Clear All Filters</button>
+          <div className="card text-center py-20 shadow-card">
+            <div className="text-5xl mb-4">🧘</div>
+            <h3 className="font-display text-xl mb-2" style={{ color: 'var(--text)' }}>No sessions found</h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--muted)' }}>Try adjusting your filters or search terms.</p>
+            <button onClick={clear} className="btn-outline text-sm px-6">Clear All Filters</button>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.map(s => <SessionCard key={s._id} session={s}/>)}
+            {sessions.map(s => <SessionCard key={s._id} session={s} />)}
           </div>
         )}
       </div>
@@ -149,22 +157,22 @@ export default function Sessions() {
   )
 }
 
-const Pill = ({ label, active, onClick }) => (
+const Chip = ({ label, active, onClick }) => (
   <button onClick={onClick}
-    className="whitespace-nowrap px-4 py-1.5 rounded-full text-xs font-medium transition-all"
+    className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
     style={{
-      background: active ? 'var(--gold)' : 'var(--surface)',
-      color: active ? '#0a0a0a' : 'var(--muted)',
-      border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
+      background:   active ? 'var(--primary)' : 'var(--surface)',
+      color:        active ? '#fff' : 'var(--muted)',
+      border:       `1.5px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
     }}>
     {label}
   </button>
 )
 
 const ActivePill = ({ label, onRemove }) => (
-  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
-    style={{background:'rgba(201,168,76,0.1)', color:'var(--gold)', border:'1px solid rgba(201,168,76,0.2)'}}>
+  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
+    style={{ background: '#EAF4E0', color: 'var(--primary)', border: '1px solid #B5D98A' }}>
     {label}
-    <button onClick={onRemove}><X size={11}/></button>
+    <button onClick={onRemove} className="hover:opacity-70"><X size={11} /></button>
   </span>
 )
