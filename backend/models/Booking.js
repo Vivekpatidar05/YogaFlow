@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-// Exported so routes can call it directly — guarantees ref is always set
+// Exported — routes call this directly before Booking.create()
 const generateRef = () => {
-  const d = new Date();
+  const d   = new Date();
   const yr  = d.getFullYear().toString().slice(-2);
   const mo  = String(d.getMonth() + 1).padStart(2, '0');
   const rnd = Math.random().toString(36).substring(2, 7).toUpperCase();
@@ -13,12 +13,11 @@ const bookingSchema = new mongoose.Schema({
   user:    { type: mongoose.Schema.Types.ObjectId, ref: 'User',    required: true },
   session: { type: mongoose.Schema.Types.ObjectId, ref: 'Session', required: true },
 
-  // NOT required — always supplied explicitly by the route before .create()
-  // default is a safety net only
+  // NOT marked required — always explicitly passed by the route
   bookingReference: {
     type:    String,
     unique:  true,
-    sparse:  true,          // allows multiple docs before ref is assigned
+    sparse:  true,
     default: generateRef,
   },
 
@@ -35,8 +34,8 @@ const bookingSchema = new mongoose.Schema({
   payment: {
     amount:        { type: Number, required: true },
     currency:      { type: String, default: 'INR' },
-    method:        { type: String, enum: ['online', 'cash', 'card', 'upi', 'free'], default: 'cash' },
-    status:        { type: String, enum: ['pending', 'paid', 'refunded', 'failed'],  default: 'pending' },
+    method:        { type: String, enum: ['online','cash','card','upi','free'], default: 'cash' },
+    status:        { type: String, enum: ['pending','paid','refunded','failed'],  default: 'pending' },
     transactionId: String,
     paidAt:        Date,
     refundedAt:    Date,
@@ -68,9 +67,11 @@ const bookingSchema = new mongoose.Schema({
   toObject: { virtuals: true },
 });
 
+// FIX 2: Only ONE index definition — removed the duplicate bookingSchema.index()
+// unique:true on the field above already creates the index
 bookingSchema.index({ user: 1, sessionDate: -1 });
 bookingSchema.index({ session: 1, sessionDate: 1, status: 1 });
-bookingSchema.index({ bookingReference: 1 });
+// NOTE: do NOT add bookingReference index here — it's already created by unique:true above
 
 module.exports = mongoose.model('Booking', bookingSchema);
-module.exports.generateRef = generateRef;  // export helper for routes
+module.exports.generateRef = generateRef;
