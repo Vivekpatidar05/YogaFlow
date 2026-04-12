@@ -1,94 +1,116 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import api from '../api/axios'
+import api, { setTokens, clearTokens } from '../api/axios'
 import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser]               = useState(null)
-  const [loading, setLoading]         = useState(true)
+  const [user,        setUser]        = useState(null)
+  const [loading,     setLoading]     = useState(true)
   const [initialized, setInitialized] = useState(false)
 
-  // ── Boot: restore session from stored token ────────────────────────────────
+  // ── Boot: restore session from stored token ───────────────────────────────
   useEffect(() => {
     const boot = async () => {
       const token = localStorage.getItem('accessToken')
+
       if (!token) {
         setLoading(false)
         setInitialized(true)
         return
       }
+
       try {
         const { data } = await api.get('/auth/me')
         setUser(data.user)
-      } catch {
-        // Token invalid / expired — clear storage
-        localStorage.removeItem('accessToken')
-        localStorage.removeItem('refreshToken')
+
+      } catch (err) {
+        const status = err.response?.status
+
+        // ── CRITICAL FIX ──────────────────────────────────────────────────────
+        // Old code deleted the token on ANY error (network timeouts, 5xx, etc.)
+        // That meant: transient network error on boot → token deleted → user
+        // appears logged out → every subsequent request gets 401.
+        //
+        // New code: ONLY delete the token if the server explicitly says it's
+        // invalid (401). For network errors or 5xx, keep the token — it's
+        // probably still valid, the server just hiccupped.
+        // ─────────────────────────────────────────────────────────────────────
+        if (status === 401) {
+          clearTokens()
+        }
+        // Any other error: leave the token alone. The user will just appear
+        // logged out temporarily and can refresh the page.
       } finally {
         setLoading(false)
         setInitialized(true)
       }
     }
+
     boot()
   }, [])
 
-  // ── Store tokens + set user in one place ──────────────────────────────────
-  const _setSession = useCallback((accessToken, refreshToken, userData) => {
-    localStorage.setItem('accessToken',  accessToken)
-    localStorage.setItem('refreshToken', refreshToken)
+  // ── Internal: store session atomically ────────────────────────────────────
+  // Uses the module-level setTokens() so the axios interceptor gets the token
+  // immediately (before any subsequent request fires), with no async gaps.
+  const _applySession = useCallback((accessToken, refreshToken, userData) => {
+    setTokens(accessToken, refreshToken)  // in-memory + localStorage
     setUser(userData)
   }, [])
 
-  // ── Login ──────────────────────────────────────────────────────────────────
+  // ── Login ─────────────────────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
-    _setSession(data.accessToken, data.refreshToken, data.user)
+    _applySession(data.accessToken, data.refreshToken, data.user)
     return data
-  }, [_setSession])
+  }, [_applySession])
 
-  // ── Register (sends OTP — does NOT log the user in yet) ───────────────────
+  // ── Register (sends OTP — does NOT log user in yet) ───────────────────────
   const register = useCallback(async (formData) => {
     const { data } = await api.post('/auth/register', formData)
-    return data   // { success, message, needsVerification, email }
+    return data
   }, [])
 
-  // ── Verify email OTP → logs user in immediately (NO page reload needed) ───
+  // ── Verify email OTP → logs user in immediately ───────────────────────────
+  // This is the safe replacement for the old pattern of:
+  //   localStorage.setItem(token)  +  window.location.reload()
+  // That old pattern caused a race: reload would re-init AuthContext which
+  // sometimes called /auth/me before the token was "visible", got a 401,
+  // and deleted the token.
   const verifyEmailAndLogin = useCallback(async (email, otp) => {
     const { data } = await api.post('/auth/verify-email', { email, otp })
-    _setSession(data.accessToken, data.refreshToken, data.user)
+    _applySession(data.accessToken, data.refreshToken, data.user)
     return data
-  }, [_setSession])
+  }, [_applySession])
 
-  // ── Resend OTP ─────────────────────────────────────────────────────────────
+  // ── Resend verification OTP ───────────────────────────────────────────────
   const resendVerification = useCallback(async (email) => {
     const { data } = await api.post('/auth/resend-verification', { email })
     return data
   }, [])
 
-  // ── Logout ─────────────────────────────────────────────────────────────────
+  // ── Logout ────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
       const rt = localStorage.getItem('refreshToken')
       if (rt) await api.post('/auth/logout', { refreshToken: rt })
-    } catch {}
-    localStorage.removeItem('accessToken')
-    localStorage.removeItem('refreshToken')
+    } catch { /* best-effort */ }
+    clearTokens()
     setUser(null)
     toast.success('Logged out successfully')
   }, [])
 
-  // ── Update local user state (after profile edits) ─────────────────────────
+  // ── Update local user state ───────────────────────────────────────────────
   const updateUser = useCallback((updates) => {
     setUser(prev => ({ ...prev, ...updates }))
   }, [])
 
-  // ── Refresh user from server ───────────────────────────────────────────────
+  // ── Refresh user from server ──────────────────────────────────────────────
   const refreshUser = useCallback(async () => {
     try {
       const { data } = await api.get('/auth/me')
       setUser(data.user)
-    } catch {}
+    } catch { /* silent — user stays as-is */ }
   }, [])
 
   return (
@@ -99,7 +121,6 @@ export const AuthProvider = ({ children }) => {
       isAuthenticated:  !!user,
       isAdmin:          user?.role === 'admin',
       isInstructor:     user?.role === 'instructor',
-      // Auth actions
       login,
       register,
       verifyEmailAndLogin,
