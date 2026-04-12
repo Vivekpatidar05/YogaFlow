@@ -5,19 +5,24 @@ import toast from 'react-hot-toast'
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser]               = useState(null)
+  const [loading, setLoading]         = useState(true)
   const [initialized, setInitialized] = useState(false)
 
-  // ── Initialize: load user from token ──────────────────────────────────────
+  // ── Boot: restore session from stored token ────────────────────────────────
   useEffect(() => {
-    const initAuth = async () => {
+    const boot = async () => {
       const token = localStorage.getItem('accessToken')
-      if (!token) { setLoading(false); setInitialized(true); return }
+      if (!token) {
+        setLoading(false)
+        setInitialized(true)
+        return
+      }
       try {
         const { data } = await api.get('/auth/me')
         setUser(data.user)
       } catch {
+        // Token invalid / expired — clear storage
         localStorage.removeItem('accessToken')
         localStorage.removeItem('refreshToken')
       } finally {
@@ -25,32 +30,47 @@ export const AuthProvider = ({ children }) => {
         setInitialized(true)
       }
     }
-    initAuth()
+    boot()
   }, [])
 
-  // ── Register ───────────────────────────────────────────────────────────────
-  const register = useCallback(async (formData) => {
-    const { data } = await api.post('/auth/register', formData)
-    localStorage.setItem('accessToken', data.accessToken)
-    localStorage.setItem('refreshToken', data.refreshToken)
-    setUser(data.user)
-    return data
+  // ── Store tokens + set user in one place ──────────────────────────────────
+  const _setSession = useCallback((accessToken, refreshToken, userData) => {
+    localStorage.setItem('accessToken',  accessToken)
+    localStorage.setItem('refreshToken', refreshToken)
+    setUser(userData)
   }, [])
 
   // ── Login ──────────────────────────────────────────────────────────────────
   const login = useCallback(async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
-    localStorage.setItem('accessToken', data.accessToken)
-    localStorage.setItem('refreshToken', data.refreshToken)
-    setUser(data.user)
+    _setSession(data.accessToken, data.refreshToken, data.user)
+    return data
+  }, [_setSession])
+
+  // ── Register (sends OTP — does NOT log the user in yet) ───────────────────
+  const register = useCallback(async (formData) => {
+    const { data } = await api.post('/auth/register', formData)
+    return data   // { success, message, needsVerification, email }
+  }, [])
+
+  // ── Verify email OTP → logs user in immediately (NO page reload needed) ───
+  const verifyEmailAndLogin = useCallback(async (email, otp) => {
+    const { data } = await api.post('/auth/verify-email', { email, otp })
+    _setSession(data.accessToken, data.refreshToken, data.user)
+    return data
+  }, [_setSession])
+
+  // ── Resend OTP ─────────────────────────────────────────────────────────────
+  const resendVerification = useCallback(async (email) => {
+    const { data } = await api.post('/auth/resend-verification', { email })
     return data
   }, [])
 
   // ── Logout ─────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     try {
-      const refreshToken = localStorage.getItem('refreshToken')
-      await api.post('/auth/logout', { refreshToken })
+      const rt = localStorage.getItem('refreshToken')
+      if (rt) await api.post('/auth/logout', { refreshToken: rt })
     } catch {}
     localStorage.removeItem('accessToken')
     localStorage.removeItem('refreshToken')
@@ -58,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out successfully')
   }, [])
 
-  // ── Update user state ──────────────────────────────────────────────────────
+  // ── Update local user state (after profile edits) ─────────────────────────
   const updateUser = useCallback((updates) => {
     setUser(prev => ({ ...prev, ...updates }))
   }, [])
@@ -71,15 +91,22 @@ export const AuthProvider = ({ children }) => {
     } catch {}
   }, [])
 
-  const isAdmin = user?.role === 'admin'
-  const isInstructor = user?.role === 'instructor'
-  const isAuthenticated = !!user
-
   return (
     <AuthContext.Provider value={{
-      user, loading, initialized,
-      isAuthenticated, isAdmin, isInstructor,
-      register, login, logout, updateUser, refreshUser
+      user,
+      loading,
+      initialized,
+      isAuthenticated:  !!user,
+      isAdmin:          user?.role === 'admin',
+      isInstructor:     user?.role === 'instructor',
+      // Auth actions
+      login,
+      register,
+      verifyEmailAndLogin,
+      resendVerification,
+      logout,
+      updateUser,
+      refreshUser,
     }}>
       {children}
     </AuthContext.Provider>
