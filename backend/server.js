@@ -84,7 +84,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     success: true,
     message: 'YogaFlow API is running 🧘',
-    version: 'v4-bookings-fix',
+    version: 'v5.1-cloudinary-sdk',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
   });
