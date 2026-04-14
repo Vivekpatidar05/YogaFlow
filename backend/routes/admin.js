@@ -291,3 +291,82 @@ router.post('/create-admin', async (req, res) => {
 });
 
 module.exports = router;
+
+// ── GET /api/admin/instructor-applications ─────────────────────────────────────
+router.get('/instructor-applications', async (req, res) => {
+  try {
+    const InstructorApplication = require('../models/InstructorApplication');
+    const { status = 'pending' } = req.query;
+    const filter = {};
+    if (status !== 'all') filter.status = status;
+
+    const applications = await InstructorApplication.find(filter)
+      .populate('user', 'firstName lastName email phone avatar createdAt stats')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, applications });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ── PATCH /api/admin/instructor-applications/:id — Approve or reject ───────────
+router.patch('/instructor-applications/:id', async (req, res) => {
+  try {
+    const { action, adminNote } = req.body; // action: 'approve' | 'reject'
+    if (!['approve','reject'].includes(action))
+      return res.status(400).json({ success: false, message: 'Action must be approve or reject.' });
+
+    const InstructorApplication = require('../models/InstructorApplication');
+    const { notifyInstructorApproval } = require('../utils/notifications');
+    const app = await InstructorApplication.findById(req.params.id).populate('user');
+
+    if (!app) return res.status(404).json({ success: false, message: 'Application not found.' });
+
+    app.status     = action === 'approve' ? 'approved' : 'rejected';
+    app.adminNote  = adminNote || '';
+    app.reviewedBy = req.user._id;
+    app.reviewedAt = new Date();
+    await app.save();
+
+    // Update user role
+    const newRole = action === 'approve' ? 'instructor' : 'user';
+    await User.findByIdAndUpdate(app.user._id, {
+      role: newRole,
+      ...(action === 'approve' && {
+        'preferences.instructorBio': app.bio,
+      }),
+    });
+
+    // Send in-app notification
+    await notifyInstructorApproval(app.user._id, action === 'approve', adminNote);
+
+    // Send email notification
+    const { sendEmail } = require('../utils/email');
+    if (action === 'approve') {
+      const { subject, htmlContent } = {
+        subject: '🎉 Your YogaFlow Instructor Application is Approved!',
+        htmlContent: `<div style="font-family:sans-serif;padding:20px;">
+          <h2>Welcome aboard, ${app.user.firstName}! 🧘</h2>
+          <p>Your instructor application has been <strong>approved</strong>. You can now:</p>
+          <ul>
+            <li>Create and manage your own yoga sessions</li>
+            <li>View bookings made by students for your sessions</li>
+            <li>Build your instructor profile</li>
+          </ul>
+          <p><a href="${process.env.FRONTEND_URL}/instructor/dashboard" style="background:#2C5F2E;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;">Go to Instructor Dashboard →</a></p>
+        </div>`,
+      };
+      await sendEmail({ to: app.user.email, subject, htmlContent }).catch(() => {});
+    }
+
+    res.json({
+      success: true,
+      message: `Application ${action}d. ${app.user.firstName} has been notified.`,
+    });
+  } catch (err) {
+    console.error('Approve instructor error:', err);
+    res.status(500).json({ success: false, message: err.message });
+  }
+});

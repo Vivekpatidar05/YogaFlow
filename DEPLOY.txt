@@ -1,0 +1,37 @@
+YogaFlow v5 — Instructor System + Image Uploads + Notifications
+================================================================
+
+BACKEND CHANGES (push to GitHub → Railway auto-redeploys):
+  Replace ALL files in backend/ with the files from this ZIP.
+
+FRONTEND CHANGES (push to GitHub → Vercel auto-redeploys):
+  Replace these files in frontend/src/:
+    App.jsx
+    api/axios.js
+    contexts/AuthContext.jsx
+    components/Navbar.jsx
+    components/NotificationBell.jsx  (NEW)
+    components/ImageUpload.jsx       (NEW)
+    pages/Admin.jsx
+    pages/Profile.jsx
+    pages/InstructorDashboard.jsx    (NEW)
+    pages/InstructorApply.jsx        (NEW)
+
+RAILWAY ENVIRONMENT VARIABLES TO ADD:
+  CLOUDINARY_CLOUD_NAME = your_cloud_name
+  CLOUDINARY_API_KEY    = your_api_key
+  CLOUDINARY_API_SECRET = your_api_secret
+
+CLOUDINARY SETUP (free, 2 minutes):
+  1. https://cloudinary.com → sign up free
+  2. Dashboard → copy Cloud Name, API Key, API Secret
+  3. Add the 3 values above to Railway Variables
+
+VERIFY DEPLOYMENT:
+  https://yogaflow-production-bb2a.up.railway.app/api/health
+  Should show: "version": "v4-bookings-fix"
+  (version string doesn't change for v5 — check Railway deploy logs instead)
+
+MAKE YOURSELF ADMIN (if not already):
+  POST https://yogaflow-production-bb2a.up.railway.app/api/admin/create-admin
+  Body: { "email": "your@email.com", "secretKey": "your ADMIN_SECRET_KEY" }

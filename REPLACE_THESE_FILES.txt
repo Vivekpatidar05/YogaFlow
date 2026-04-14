@@ -1,0 +1,13 @@
+Replace EXACTLY these 4 files in your project:
+
+1. frontend/src/api/axios.js
+2. frontend/src/contexts/AuthContext.jsx
+3. frontend/src/pages/Login.jsx
+4. frontend/src/pages/Signup.jsx
+
+Then push to GitHub:
+  git add .
+  git commit -m "fix: auth token 401 bug"
+  git push
+
+Vercel auto-deploys. Done.

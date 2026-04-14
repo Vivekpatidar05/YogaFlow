@@ -1,0 +1,19 @@
+REPLACE THESE 3 FILES IN YOUR PROJECT:
+======================================
+
+1. backend/routes/bookings.js  →  replace with v4patch/backend/routes/bookings.js
+2. backend/routes/admin.js     →  replace with v4patch/backend/routes/admin.js
+3. backend/server.js           →  replace with v4patch/backend/server.js
+
+Then run in your project root:
+  git add backend/routes/bookings.js backend/routes/admin.js backend/server.js
+  git commit -m "v4: fix 500 on bookings/my"
+  git push
+
+VERIFY IT WORKED:
+=================
+Open this URL in your browser AFTER Railway redeploys (takes ~2 min):
+  https://yogaflow-production-bb2a.up.railway.app/api/health
+
+You should see:  "version": "v4-bookings-fix"
+If you see that, the new code is live and My Bookings will work.

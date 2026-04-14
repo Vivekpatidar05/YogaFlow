@@ -10,7 +10,11 @@ const authRoutes    = require('./routes/auth');
 const sessionRoutes = require('./routes/sessions');
 const bookingRoutes = require('./routes/bookings');
 const userRoutes    = require('./routes/users');
-const adminRoutes   = require('./routes/admin');
+const adminRoutes      = require('./routes/admin');
+const instructorRoutes = require('./routes/instructor');
+const uploadRoutes     = require('./routes/upload');
+const waitlistRoutes   = require('./routes/waitlist');
+const notifRoutes      = require('./routes/notifications');
 
 const app = express();
 
@@ -70,7 +74,11 @@ app.use('/api/auth',     authLimiter, authRoutes);
 app.use('/api/sessions', sessionRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users',    userRoutes);
-app.use('/api/admin',    adminRoutes);
+app.use('/api/admin',        adminRoutes);
+app.use('/api/instructor',   instructorRoutes);
+app.use('/api/upload',       uploadRoutes);
+app.use('/api/waitlist',     waitlistRoutes);
+app.use('/api/notifications',notifRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({
