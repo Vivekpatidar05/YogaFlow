@@ -90,6 +90,42 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// ── TEST UPLOAD ENDPOINT — verify Cloudinary config ──────────────────────────
+// GET /api/test-upload
+// Returns Cloudinary config status without actually uploading
+app.get('/api/test-upload', (req, res) => {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey    = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  res.json({
+    success:        !!(cloudName && apiKey && apiSecret),
+    cloudinary: {
+      cloud_name_set: !!cloudName,
+      api_key_set:    !!apiKey,
+      api_secret_set: !!apiSecret,
+      cloud_name_preview: cloudName ? cloudName.substring(0,6)+'…' : 'NOT SET',
+    },
+    message: (!cloudName || !apiKey || !apiSecret)
+      ? 'Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Railway Variables'
+      : 'Cloudinary is configured ✅',
+  });
+});
+
+// ── TEST: Verify Cloudinary config ──────────────────────────────────────────
+// GET /api/test-cloudinary  — open in browser to check credentials
+app.get('/api/test-cloudinary', (req, res) => {
+  const { isConfigured } = require('./utils/cloudinary');
+  res.json({
+    success:       isConfigured(),
+    cloudName:     process.env.CLOUDINARY_CLOUD_NAME ? '✅ set' : '❌ missing',
+    apiKey:        process.env.CLOUDINARY_API_KEY    ? '✅ set' : '❌ missing',
+    apiSecret:     process.env.CLOUDINARY_API_SECRET ? '✅ set' : '❌ missing',
+    message:       isConfigured()
+      ? 'Cloudinary is configured. Image uploads should work.'
+      : 'Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Railway variables.',
+  });
+});
+
 // ── Error Handlers ────────────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error(err.stack);

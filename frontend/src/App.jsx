@@ -18,6 +18,7 @@ import Profile           from './pages/Profile'
 import Admin             from './pages/Admin'
 import InstructorDashboard from './pages/InstructorDashboard'
 import InstructorApply   from './pages/InstructorApply'
+import InstructorProfile from './pages/InstructorProfile'
 import NotFound          from './pages/NotFound'
 import LoadingSpinner    from './components/LoadingSpinner'
 

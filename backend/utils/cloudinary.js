@@ -1,9 +1,9 @@
 /**
- * Cloudinary image upload utility
- * Uses HTTPS API directly — works on Railway (no blocked ports)
- * 
- * Setup (FREE — 10GB storage, 25 credits/month):
- * 1. Go to https://cloudinary.com → sign up free
+ * Cloudinary image upload — YogaFlow
+ * Uses Cloudinary HTTP API directly (no SDK needed, works on Railway)
+ *
+ * SETUP (free — 10GB storage):
+ * 1. https://cloudinary.com → sign up free
  * 2. Dashboard → copy Cloud Name, API Key, API Secret
  * 3. Add to Railway Variables:
  *    CLOUDINARY_CLOUD_NAME = your_cloud_name
@@ -12,79 +12,71 @@
  */
 
 const https  = require('https');
-const http   = require('http');
 const crypto = require('crypto');
 
-const CLOUD   = () => process.env.CLOUDINARY_CLOUD_NAME;
-const API_KEY = () => process.env.CLOUDINARY_API_KEY;
-const SECRET  = () => process.env.CLOUDINARY_API_SECRET;
+const CLOUD  = () => process.env.CLOUDINARY_CLOUD_NAME;
+const KEY    = () => process.env.CLOUDINARY_API_KEY;
+const SECRET = () => process.env.CLOUDINARY_API_SECRET;
 
 function isConfigured() {
-  return !!(CLOUD() && API_KEY() && SECRET());
+  return !!(CLOUD() && KEY() && SECRET());
 }
 
 /**
- * Upload a buffer/base64 image to Cloudinary
- * @param {Buffer|string} imageData - Buffer or base64 string
- * @param {Object} options - { folder, public_id, transformation }
- * @returns {Promise<{success, url, public_id, width, height}>}
+ * Upload image buffer to Cloudinary.
+ * Signature covers EXACTLY the params sent (alphabetical, no file/api_key/resource_type).
  */
-async function uploadImage(imageData, options = {}) {
+async function uploadImage(buffer, options = {}) {
   if (!isConfigured()) {
-    console.warn('⚠️  Cloudinary not configured — image upload skipped');
-    return { success: false, reason: 'Cloudinary not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Railway variables.' };
+    return {
+      success: false,
+      reason:  'Cloudinary not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Railway variables.',
+    };
   }
 
   try {
-    const timestamp = Math.round(Date.now() / 1000).toString();
-    const folder    = options.folder || 'yogaflow';
-    const publicId  = options.public_id || `${folder}/${timestamp}_${crypto.randomBytes(6).toString('hex')}`;
+    const timestamp = String(Math.round(Date.now() / 1000));
+    const folder    = options.folder    || 'yogaflow';
+    const publicId  = options.public_id ||
+      `${folder}/${timestamp}_${crypto.randomBytes(6).toString('hex')}`;
 
-    // Build signature
-    const sigParams = {
-      folder,
-      public_id: publicId,
-      timestamp,
-    };
-    const sigString = Object.keys(sigParams).sort()
-      .map(k => `${k}=${sigParams[k]}`)
-      .join('&') + SECRET();
+    // ── Build ONLY the params we actually send (no eager, no extras) ─────────
+    // Rule: sign every param except file, api_key, resource_type, type, callback
+    const toSign = { folder, public_id: publicId, timestamp };
+
+    // Signature: params sorted alphabetically, joined with &, appended with secret
+    const sigString =
+      Object.keys(toSign).sort()
+        .map(k => `${k}=${toSign[k]}`)
+        .join('&') + SECRET();
+
     const signature = crypto.createHash('sha256').update(sigString).digest('hex');
 
-    // Convert buffer to base64 data URI if needed
-    let base64Data;
-    if (Buffer.isBuffer(imageData)) {
-      base64Data = imageData.toString('base64');
-    } else if (typeof imageData === 'string' && imageData.startsWith('data:')) {
-      base64Data = imageData.split(',')[1];
-    } else {
-      base64Data = imageData;
-    }
+    // ── Convert buffer to base64 data URI ────────────────────────────────────
+    const mime   = options.mimeType || 'image/jpeg';
+    const b64    = buffer.toString('base64');
+    const dataURI = `data:${mime};base64,${b64}`;
 
-    // Build multipart form body
-    const boundary = `----CloudinaryBoundary${crypto.randomBytes(8).toString('hex')}`;
-    const mimeType = options.mimeType || 'image/jpeg';
-
-    const fields = {
-      file:      `data:${mimeType};base64,${base64Data}`,
-      api_key:   API_KEY(),
+    // ── Build multipart form body ─────────────────────────────────────────────
+    const boundary = `----YF${crypto.randomBytes(8).toString('hex')}`;
+    const fields   = {
+      file:      dataURI,
+      api_key:   KEY(),
       timestamp,
       signature,
       folder,
       public_id: publicId,
-      eager:     'c_fill,w_800,h_600,q_auto|c_fill,w_200,h_200,r_max,q_auto',
     };
 
     let body = '';
-    for (const [key, val] of Object.entries(fields)) {
-      body += `--${boundary}\r\n`;
-      body += `Content-Disposition: form-data; name="${key}"\r\n\r\n`;
-      body += `${val}\r\n`;
+    for (const [k, v] of Object.entries(fields)) {
+      body += `--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`;
     }
     body += `--${boundary}--\r\n`;
 
-    const bodyBuffer = Buffer.from(body, 'utf8');
+    const bodyBuf = Buffer.from(body, 'utf8');
 
+    // ── POST to Cloudinary ────────────────────────────────────────────────────
     const result = await new Promise((resolve, reject) => {
       const req = https.request({
         hostname: 'api.cloudinary.com',
@@ -92,73 +84,65 @@ async function uploadImage(imageData, options = {}) {
         method:   'POST',
         headers:  {
           'Content-Type':   `multipart/form-data; boundary=${boundary}`,
-          'Content-Length': bodyBuffer.length,
+          'Content-Length': bodyBuf.length,
         },
       }, (res) => {
-        let data = '';
-        res.on('data', c => { data += c; });
+        let raw = '';
+        res.on('data', c => { raw += c; });
         res.on('end', () => {
-          try { resolve({ status: res.statusCode, data: JSON.parse(data) }); }
-          catch (e) { reject(new Error('Cloudinary response parse error: ' + data)); }
+          try { resolve({ status: res.statusCode, data: JSON.parse(raw) }); }
+          catch (e) { reject(new Error('Response parse error: ' + raw.slice(0, 200))); }
         });
       });
       req.on('error', reject);
-      req.write(bodyBuffer);
+      req.write(bodyBuf);
       req.end();
     });
 
     if (result.status !== 200) {
-      console.error('Cloudinary upload error:', result.data);
-      return { success: false, reason: result.data.error?.message || 'Upload failed' };
+      console.error('Cloudinary upload error:', JSON.stringify(result.data));
+      return { success: false, reason: result.data?.error?.message || `HTTP ${result.status}` };
     }
 
     const d = result.data;
-    console.log(`✅ Image uploaded: ${d.secure_url}`);
-    return {
-      success:   true,
-      url:       d.secure_url,
-      public_id: d.public_id,
-      width:     d.width,
-      height:    d.height,
-      format:    d.format,
-      bytes:     d.bytes,
-    };
+    console.log(`✅ Cloudinary upload OK: ${d.secure_url}`);
+    return { success: true, url: d.secure_url, public_id: d.public_id, bytes: d.bytes };
 
   } catch (err) {
-    console.error('Cloudinary upload exception:', err.message);
+    console.error('Cloudinary exception:', err.message);
     return { success: false, reason: err.message };
   }
 }
 
 /**
- * Delete an image from Cloudinary by public_id
+ * Delete an image by public_id.
  */
 async function deleteImage(publicId) {
   if (!isConfigured() || !publicId) return { success: false };
   try {
-    const timestamp = Math.round(Date.now() / 1000).toString();
+    const timestamp = String(Math.round(Date.now() / 1000));
     const sigString = `public_id=${publicId}&timestamp=${timestamp}${SECRET()}`;
     const signature = crypto.createHash('sha256').update(sigString).digest('hex');
+    const body      = `public_id=${encodeURIComponent(publicId)}&timestamp=${timestamp}&api_key=${KEY()}&signature=${signature}`;
+    const bodyBuf   = Buffer.from(body);
 
-    const body = `public_id=${encodeURIComponent(publicId)}&timestamp=${timestamp}&api_key=${API_KEY()}&signature=${signature}`;
-    const bodyBuffer = Buffer.from(body);
-
-    const result = await new Promise((resolve, reject) => {
+    const r = await new Promise((resolve, reject) => {
       const req = https.request({
         hostname: 'api.cloudinary.com',
         path:     `/v1_1/${CLOUD()}/image/destroy`,
         method:   'POST',
-        headers:  { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': bodyBuffer.length },
+        headers:  { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': bodyBuf.length },
       }, (res) => {
-        let data = '';
-        res.on('data', c => { data += c; });
-        res.on('end', () => { try { resolve(JSON.parse(data)); } catch { resolve({}); } });
+        let raw = '';
+        res.on('data', c => { raw += c; });
+        res.on('end', () => { try { resolve(JSON.parse(raw)); } catch { resolve({}); } });
       });
       req.on('error', reject);
-      req.write(bodyBuffer);
+      req.write(bodyBuf);
       req.end();
     });
-    return { success: result.result === 'ok' };
+
+    return { success: r.result === 'ok' };
   } catch (err) {
     console.error('Cloudinary delete error:', err.message);
     return { success: false };

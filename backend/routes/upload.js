@@ -2,49 +2,60 @@ const express = require('express');
 const router  = express.Router();
 const multer  = require('multer');
 const { uploadImage, isConfigured } = require('../utils/cloudinary');
-const { protect } = require('../middleware/auth');
+const { protect }  = require('../middleware/auth');
+const User         = require('../models/User');
 
-// Store uploads in memory (max 5MB)
+const ALLOWED_TYPES = ['image/jpeg','image/jpg','image/png','image/webp','image/gif'];
+const MAX_BYTES     = 5 * 1024 * 1024; // 5 MB
+
+const storage = multer.memoryStorage();
+
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits:  { fileSize: 5 * 1024 * 1024 }, // 5MB
+  storage,
+  limits: { fileSize: MAX_BYTES },
   fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (allowed.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only JPEG, PNG, WebP and GIF images are allowed.'));
-    }
+    if (ALLOWED_TYPES.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPEG, PNG, WebP and GIF images are allowed.'));
   },
 });
 
-// ── POST /api/upload/image ─────────────────────────────────────────────────────
-// Upload any image. Type can be: 'avatar' | 'session' | 'instructor'
-router.post('/image', protect, upload.single('image'), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No image file provided.' });
-    }
+// Wrap multer so we can return JSON errors instead of Express default HTML
+const handleUpload = (fieldName) => (req, res, next) => {
+  upload.single(fieldName)(req, res, (err) => {
+    if (!err) return next();
+    if (err.code === 'LIMIT_FILE_SIZE')
+      return res.status(400).json({ success: false, message: `Image too large. Maximum size is ${MAX_BYTES / 1024 / 1024}MB.` });
+    return res.status(400).json({ success: false, message: err.message || 'Upload error.' });
+  });
+};
 
-    if (!isConfigured()) {
-      return res.status(503).json({
-        success: false,
-        message: 'Image upload not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to Railway environment variables.',
-        setup: 'https://cloudinary.com → sign up free → Dashboard → copy credentials',
-      });
-    }
-
-    const type    = req.body.type || 'general';
-    const folder  = `yogaflow/${type}s`;
-
-    const result = await uploadImage(req.file.buffer, {
-      folder,
-      mimeType: req.file.mimetype,
+// Shared check
+const checkCloudinary = (res) => {
+  if (!isConfigured()) {
+    res.status(503).json({
+      success: false,
+      message: 'Image upload not configured. Add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET to Railway environment variables.',
+      setup: 'https://cloudinary.com → sign up free → Dashboard → copy credentials → paste into Railway Variables',
     });
+    return false;
+  }
+  return true;
+};
 
-    if (!result.success) {
-      return res.status(500).json({ success: false, message: result.reason || 'Upload failed.' });
-    }
+// ── POST /api/upload/image ────────────────────────────────────────────────────
+// For session images, instructor avatars, general images
+// Body: multipart with field "image" + optional field "type" ('session'|'instructor'|'general')
+router.post('/image', protect, handleUpload('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided. Send the file in a field named "image".' });
+    if (!checkCloudinary(res)) return;
+
+    const type   = req.body.type || 'general';
+    const folder = `yogaflow/${type}s`;
+
+    const result = await uploadImage(req.file.buffer, { folder, mimeType: req.file.mimetype });
+
+    if (!result.success) return res.status(500).json({ success: false, message: result.reason });
 
     res.json({
       success:   true,
@@ -55,37 +66,28 @@ router.post('/image', protect, upload.single('image'), async (req, res) => {
       height:    result.height,
       bytes:     result.bytes,
     });
-
   } catch (err) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ success: false, message: 'Image too large. Maximum size is 5MB.' });
-    }
-    console.error('Upload error:', err.message);
-    res.status(500).json({ success: false, message: err.message || 'Upload failed.' });
+    console.error('POST /upload/image error:', err.message);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
-// ── POST /api/upload/avatar — update user avatar ──────────────────────────────
-router.post('/avatar', protect, upload.single('image'), async (req, res) => {
+// ── POST /api/upload/avatar ───────────────────────────────────────────────────
+// Updates the authenticated user's avatar in their profile
+router.post('/avatar', protect, handleUpload('image'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided.' });
-
-    if (!isConfigured()) {
-      return res.status(503).json({ success: false, message: 'Image upload not configured. See Railway Variables.' });
-    }
+    if (!req.file) return res.status(400).json({ success: false, message: 'No image file provided. Send the file in a field named "image".' });
+    if (!checkCloudinary(res)) return;
 
     const result = await uploadImage(req.file.buffer, {
-      folder:    `yogaflow/avatars`,
-      mimeType:  req.file.mimetype,
+      folder:    'yogaflow/avatars',
       public_id: `yogaflow/avatars/user_${req.user._id}`,
+      mimeType:  req.file.mimetype,
     });
 
-    if (!result.success) {
-      return res.status(500).json({ success: false, message: result.reason || 'Upload failed.' });
-    }
+    if (!result.success) return res.status(500).json({ success: false, message: result.reason });
 
-    // Update user avatar
-    const User = require('../models/User');
+    // Persist to DB
     await User.findByIdAndUpdate(req.user._id, { avatar: result.url });
 
     res.json({
@@ -94,9 +96,7 @@ router.post('/avatar', protect, upload.single('image'), async (req, res) => {
       url:     result.url,
     });
   } catch (err) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ success: false, message: 'Image too large. Maximum size is 5MB.' });
-    }
+    console.error('POST /upload/avatar error:', err.message);
     res.status(500).json({ success: false, message: err.message });
   }
 });
