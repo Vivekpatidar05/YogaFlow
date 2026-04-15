@@ -15,6 +15,7 @@ const instructorRoutes = require('./routes/instructor');
 const uploadRoutes     = require('./routes/upload');
 const waitlistRoutes   = require('./routes/waitlist');
 const notifRoutes      = require('./routes/notifications');
+const couponRoutes     = require('./routes/coupons');
 
 const app = express();
 
@@ -79,6 +80,7 @@ app.use('/api/instructor',   instructorRoutes);
 app.use('/api/upload',       uploadRoutes);
 app.use('/api/waitlist',     waitlistRoutes);
 app.use('/api/notifications',notifRoutes);
+app.use('/api/coupons',       couponRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({

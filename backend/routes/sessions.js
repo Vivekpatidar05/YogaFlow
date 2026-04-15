@@ -158,3 +158,22 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
 });
 
 module.exports = router;
+
+// ── GET /api/sessions/:id/reviews ─────────────────────────────────────────────
+router.get('/:id/reviews', async (req, res) => {
+  try {
+    const Booking = require('../models/Booking');
+    const reviews = await Booking.find({
+      session: req.params.id,
+      'feedback.rating': { $exists: true, $ne: null },
+    })
+    .populate('user', 'firstName lastName avatar')
+    .select('feedback user sessionDate')
+    .sort({ 'feedback.submittedAt': -1 })
+    .limit(50)
+    .lean();
+    res.json({ success: true, reviews });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});

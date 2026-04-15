@@ -54,6 +54,34 @@ router.post('/', protect, async (req, res) => {
     if (taken >= session.maxCapacity)
       return res.status(409).json({ success: false, message: 'Session is fully booked for that date.' });
 
+    // ── Optional coupon application ────────────────────────────────────────────
+    let finalPrice = session.price;
+    let discountAmount = 0;
+    let appliedCoupon = null;
+
+    if (req.body.couponCode) {
+      const Coupon = require('../models/Coupon');
+      const coupon = await Coupon.findOne({
+        code: req.body.couponCode.toUpperCase().trim(),
+        isActive: true,
+        validFrom:  { $lte: new Date() },
+        validUntil: { $gte: new Date() },
+      });
+      if (coupon && !coupon.usedBy.includes(req.user._id)) {
+        if (coupon.discountType === 'percentage') {
+          discountAmount = Math.round((session.price * coupon.discountValue) / 100);
+          if (coupon.maxDiscount) discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+        } else {
+          discountAmount = Math.min(coupon.discountValue, session.price);
+        }
+        finalPrice = Math.max(0, session.price - discountAmount);
+        appliedCoupon = coupon;
+        // Mark coupon as used
+        await coupon.updateOne({ $inc: { usageCount: 1 }, $push: { usedBy: req.user._id } });
+      }
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     const bookingReference = generateRef();
     const dayName = bookingDate.toLocaleDateString('en-US', { weekday: 'long' });
 
@@ -66,7 +94,9 @@ router.post('/', protect, async (req, res) => {
       sessionDay:  dayName,
       status:      'confirmed',
       payment: {
-        amount:   session.price,
+        amount:   finalPrice,
+        originalAmount: session.price,
+        discountAmount,
         currency: session.currency || 'INR',
         method:   paymentMethod,
         status:   'pending',
