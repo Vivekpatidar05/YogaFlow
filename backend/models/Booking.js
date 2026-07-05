@@ -32,7 +32,10 @@ const bookingSchema = new mongoose.Schema({
   },
 
   payment: {
-    amount:        { type: Number, required: true },
+    amount:         { type: Number, required: true },
+    originalAmount: Number,
+    discountAmount: { type: Number, default: 0 },
+    couponCode:     String,
     currency:      { type: String, default: 'INR' },
     method:        { type: String, enum: ['online','cash','card','upi','free'], default: 'cash' },
     status:        { type: String, enum: ['pending','paid','refunded','failed'],  default: 'pending' },

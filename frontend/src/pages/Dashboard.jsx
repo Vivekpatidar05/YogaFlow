@@ -39,9 +39,9 @@ export default function Dashboard() {
   const earnedMilestones = MILESTONES.filter(m => m.count <= totalSessions)
 
   const stats = [
-    { label:'Total Bookings',  value:user?.stats?.totalBookings||0,      icon:CalendarDays, bg:'#EAF4E0', color:'var(--primary)' },
-    { label:'Completed',       value:user?.stats?.completedSessions||0,  icon:CheckCircle2, bg:'#EBF5FD', color:'#1A4C8A' },
-    { label:'Cancelled',       value:user?.stats?.cancelledBookings||0,  icon:XCircle,      bg:'#FDEEE8', color:'var(--terra)' },
+    { label:'Total Bookings',  value:user?.stats?.totalBookings||0,      icon:CalendarDays, bg:'var(--tint-green)', color:'var(--primary)' },
+    { label:'Completed',       value:user?.stats?.completedSessions||0,  icon:CheckCircle2, bg:'var(--tint-blue)', color:'var(--tint-blue-text)' },
+    { label:'Cancelled',       value:user?.stats?.cancelledBookings||0,  icon:XCircle,      bg:'var(--tint-terra)', color:'var(--terra)' },
   ]
 
   return (
@@ -68,14 +68,14 @@ export default function Dashboard() {
         </div>
 
         {/* Progress to next milestone */}
-        <div className="card p-6 mb-6 shadow-card" style={{ background:'linear-gradient(135deg,#EAF4E0 0%,#F0F7EC 100%)', border:'1.5px solid #B5D98A' }}>
+        <div className="card p-6 mb-6 shadow-card" style={{ background:'linear-gradient(135deg,var(--tint-green) 0%,var(--tint-green-soft) 100%)', border:'1.5px solid var(--tint-green-brd)' }}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <TrendingUp size={18} style={{ color:'var(--primary)' }}/>
               <h3 className="font-semibold" style={{ color:'var(--primary)' }}>Your Progress</h3>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
-              style={{ background:'rgba(44,95,46,0.12)', color:'var(--primary)' }}>
+              style={{ background:'rgba(var(--primary-rgb),0.12)', color:'var(--primary)' }}>
               <Flame size={12}/> {totalSessions} sessions
             </div>
           </div>
@@ -83,15 +83,15 @@ export default function Dashboard() {
           <div className="flex items-center gap-3 mb-3">
             <span className="text-2xl">{prevMilestone?.icon || '🌱'}</span>
             <div className="flex-1">
-              <div className="flex justify-between text-xs mb-1" style={{ color:'#3A6A1E' }}>
+              <div className="flex justify-between text-xs mb-1" style={{ color:'var(--tint-green-text)' }}>
                 <span>{prevMilestone?.label || 'Start'}</span>
                 <span>{nextMilestone.icon} {nextMilestone.label}</span>
               </div>
-              <div className="h-3 rounded-full overflow-hidden" style={{ background:'rgba(44,95,46,0.15)' }}>
+              <div className="h-3 rounded-full overflow-hidden" style={{ background:'rgba(var(--primary-rgb),0.15)' }}>
                 <div className="h-full rounded-full transition-all duration-700"
                   style={{ width:`${Math.min(milestonesPct,100)}%`, background:'var(--primary)' }}/>
               </div>
-              <p className="text-xs mt-1" style={{ color:'#3A6A1E' }}>
+              <p className="text-xs mt-1" style={{ color:'var(--tint-green-text)' }}>
                 {totalSessions} / {nextMilestone.count} sessions · {nextMilestone.count - totalSessions} to go
               </p>
             </div>
@@ -102,7 +102,7 @@ export default function Dashboard() {
             <div className="flex flex-wrap gap-2 mt-3">
               {earnedMilestones.map(m => (
                 <div key={m.count} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-                  style={{ background:'rgba(44,95,46,0.1)', color:'var(--primary)' }}>
+                  style={{ background:'rgba(var(--primary-rgb),0.1)', color:'var(--primary)' }}>
                   <span>{m.icon}</span>{m.label}
                 </div>
               ))}
@@ -128,10 +128,10 @@ export default function Dashboard() {
               </div>
             ) : upcoming.map(b => (
               <Link key={b._id} to={`/my-bookings/${b._id}`}
-                className="flex items-center gap-3 py-3 border-b last:border-0 group hover:bg-[#F5F8F0] -mx-2 px-2 rounded-xl transition-all"
+                className="flex items-center gap-3 py-3 border-b last:border-0 group hover:bg-[var(--surface2)] -mx-2 px-2 rounded-xl transition-all"
                 style={{ borderColor:'var(--border)', textDecoration:'none' }}>
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                  style={{ background:'#EAF4E0' }}>🧘</div>
+                  style={{ background:'var(--tint-green)' }}>🧘</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" style={{ color:'var(--text)' }}>{b.session?.title}</p>
                   <p className="text-xs flex items-center gap-1" style={{ color:'var(--muted)' }}>
@@ -156,7 +156,7 @@ export default function Dashboard() {
                   { to:'/profile',     label:'Profile Settings',       sub:'Update your details' },
                 ].map(({ to, label, sub }) => (
                   <Link key={to} to={to}
-                    className="flex items-center justify-between p-3 rounded-xl transition-all hover:bg-[#EAF4E0] group">
+                    className="flex items-center justify-between p-3 rounded-xl transition-all hover:bg-[var(--tint-green)] group">
                     <div>
                       <p className="text-sm font-medium" style={{ color:'var(--text)' }}>{label}</p>
                       <p className="text-xs" style={{ color:'var(--muted)' }}>{sub}</p>
@@ -175,8 +175,8 @@ export default function Dashboard() {
                   {recent.slice(0,3).map(b => (
                     <div key={b._id} className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ background:'#EBF5FD' }}>
-                        <CheckCircle2 size={14} style={{ color:'#1A4C8A' }}/>
+                        style={{ background:'var(--tint-blue)' }}>
+                        <CheckCircle2 size={14} style={{ color:'var(--tint-blue-text)' }}/>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium truncate" style={{ color:'var(--text)' }}>{b.session?.title}</p>
@@ -211,8 +211,8 @@ export default function Dashboard() {
                 <div key={m.count}
                   className="text-center p-3 rounded-xl border transition-all"
                   style={{
-                    background:   earned ? '#EAF4E0' : 'var(--surface2)',
-                    borderColor:  earned ? '#B5D98A' : 'var(--border)',
+                    background:   earned ? 'var(--tint-green)' : 'var(--surface2)',
+                    borderColor:  earned ? 'var(--tint-green-brd)' : 'var(--border)',
                     opacity:      earned ? 1 : 0.5,
                   }}>
                   <div className="text-2xl mb-1" style={{ filter: earned ? 'none' : 'grayscale(1)' }}>{m.icon}</div>

@@ -92,7 +92,7 @@ export default function ForgotPassword() {
             <>
               <div className="text-center mb-8">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: '#EAF4E0', border: '2px solid #B5D98A' }}>
+                  style={{ background: 'var(--tint-green)', border: '2px solid var(--tint-green-brd)' }}>
                   <Mail size={22} style={{ color: 'var(--primary)' }} />
                 </div>
                 <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>Forgot Password?</h1>
@@ -119,7 +119,7 @@ export default function ForgotPassword() {
             <>
               <div className="text-center mb-8">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: '#EAF4E0', border: '2px solid #B5D98A' }}>
+                  style={{ background: 'var(--tint-green)', border: '2px solid var(--tint-green-brd)' }}>
                   <KeyRound size={22} style={{ color: 'var(--primary)' }} />
                 </div>
                 <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>Enter OTP</h1>
@@ -133,7 +133,7 @@ export default function ForgotPassword() {
                   {otp.map((d, i) => (
                     <input key={i} id={`fp-${i}`} type="text" inputMode="numeric" maxLength={1}
                       className="otp-box" value={d}
-                      style={d ? { borderColor:'var(--primary)', color:'var(--primary)', background:'#F0F7EC' } : {}}
+                      style={d ? { borderColor:'var(--primary)', color:'var(--primary)', background:'var(--tint-green-soft)' } : {}}
                       onChange={e => handleOtpChange(i, e.target.value)}
                       onKeyDown={e => e.key==='Backspace' && !d && i > 0 && document.getElementById(`fp-${i-1}`)?.focus()} />
                   ))}
@@ -160,7 +160,7 @@ export default function ForgotPassword() {
             <>
               <div className="text-center mb-8">
                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: '#EAF4E0', border: '2px solid #B5D98A' }}>
+                  style={{ background: 'var(--tint-green)', border: '2px solid var(--tint-green-brd)' }}>
                   <ShieldCheck size={22} style={{ color: 'var(--primary)' }} />
                 </div>
                 <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>New Password</h1>

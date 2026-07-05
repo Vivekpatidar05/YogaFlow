@@ -66,7 +66,7 @@ export default function Login() {
           src="https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?w=900&auto=format&q=80"
           alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,rgba(44,95,46,0.7) 0%,rgba(26,58,28,0.5) 100%)' }} />
+          style={{ background: 'linear-gradient(135deg,rgba(var(--primary-rgb),0.7) 0%,rgba(26,58,28,0.5) 100%)' }} />
         <div className="absolute bottom-12 left-10 right-10 text-white">
           <h2 className="font-display text-2xl font-normal mb-3 leading-snug">
             Welcome back to your practice

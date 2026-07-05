@@ -128,6 +128,11 @@ router.patch('/bookings/:id/cancel', async (req, res) => {
     const user = await User.findById(booking.user);
     if (user) sendBookingCancellation(booking, user, booking.session).catch(() => {});
 
+    // Spot opened — notify the first person on the waitlist
+    const { processWaitlist } = require('./waitlist');
+    processWaitlist(booking.session._id || booking.session, booking.sessionDate)
+      .catch(e => console.error('Waitlist notify failed:', e.message));
+
     res.json({ success: true, message: 'Booking cancelled and user notified.', booking });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

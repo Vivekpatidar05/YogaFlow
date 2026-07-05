@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useParams, useLocation, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Calendar, Clock, User, CreditCard, CheckCircle, ChevronLeft, Info, Tag, X } from 'lucide-react'
+import { Calendar, Clock, User, CreditCard, CheckCircle, ChevronLeft, Info, Tag, X, CalendarPlus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { downloadBookingICS } from '../utils/calendar'
 
 export default function BookSession() {
   const { id }     = useParams()
-  const location   = useNavigate()
   const nav        = useNavigate()
   const loc        = useLocation()
   const { user }   = useAuth()
@@ -87,7 +87,7 @@ export default function BookSession() {
       <div className="max-w-md w-full mx-auto px-4">
         <div className="card p-10 text-center shadow-card-hover">
           <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5"
-            style={{ background:'#EAF4E0', border:'3px solid #B5D98A' }}>
+            style={{ background:'var(--tint-green)', border:'3px solid var(--tint-green-brd)' }}>
             <CheckCircle size={36} style={{ color:'var(--primary)' }} />
           </div>
           <h1 className="font-display text-3xl font-semibold mb-2" style={{ color:'var(--text)' }}>Booking Confirmed!</h1>
@@ -110,6 +110,10 @@ export default function BookSession() {
           </div>
 
           <div className="flex flex-col gap-3">
+            <button onClick={() => downloadBookingICS(booked, session)}
+              className="btn-outline w-full justify-center py-3 gap-2 text-sm">
+              <CalendarPlus size={15}/> Add to Calendar
+            </button>
             <Link to="/my-bookings" className="btn-primary w-full justify-center py-3.5">View My Bookings</Link>
             <Link to="/sessions"    className="btn-ghost w-full justify-center text-sm" style={{ color:'var(--muted)' }}>Browse More Sessions</Link>
           </div>
@@ -146,7 +150,7 @@ export default function BookSession() {
                       className="p-3 rounded-xl border-2 text-left transition-all"
                       style={{
                         borderColor: selectedSlot?.date===slot.date ? 'var(--primary)' : slot.isFull ? 'var(--border)' : 'var(--border2)',
-                        background:  selectedSlot?.date===slot.date ? '#EAF4E0' : 'var(--surface)',
+                        background:  selectedSlot?.date===slot.date ? 'var(--tint-green)' : 'var(--surface)',
                         opacity:     slot.isFull ? 0.45 : 1,
                         cursor:      slot.isFull ? 'not-allowed' : 'pointer',
                       }}>
@@ -173,7 +177,7 @@ export default function BookSession() {
                 ))}
               </div>
               <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs"
-                style={{ background:'#EAF4E0', border:'1px solid #B5D98A', color:'var(--primary)' }}>
+                style={{ background:'var(--tint-green)', border:'1px solid var(--tint-green-brd)', color:'var(--primary)' }}>
                 <Info size={12} style={{ flexShrink:0 }}/>
                 Details from your profile.{' '}
                 <Link to="/profile" className="font-semibold underline" style={{ color:'var(--primary)' }}>Update →</Link>
@@ -206,7 +210,7 @@ export default function BookSession() {
                         className="p-3 rounded-xl border-2 text-center transition-all"
                         style={{
                           borderColor: form.paymentMethod===m.v ? 'var(--primary)' : 'var(--border)',
-                          background:  form.paymentMethod===m.v ? '#EAF4E0' : 'var(--surface)',
+                          background:  form.paymentMethod===m.v ? 'var(--tint-green)' : 'var(--surface)',
                         }}>
                         <div className="text-sm font-medium">{m.l}</div>
                         <div className="text-xs mt-0.5" style={{ color:'var(--faint)' }}>Pay at studio</div>
@@ -220,12 +224,12 @@ export default function BookSession() {
                   <label className="label flex items-center gap-1.5"><Tag size={11}/> Coupon Code <Opt/></label>
                   {couponData ? (
                     <div className="flex items-center justify-between px-4 py-3 rounded-xl"
-                      style={{ background:'#EAF4E0', border:'1.5px solid #B5D98A' }}>
+                      style={{ background:'var(--tint-green)', border:'1.5px solid var(--tint-green-brd)' }}>
                       <div>
                         <p className="text-sm font-bold" style={{ color:'var(--primary)' }}>{couponData.coupon.code}</p>
-                        <p className="text-xs" style={{ color:'#3A6A1E' }}>{couponData.message}</p>
+                        <p className="text-xs" style={{ color:'var(--tint-green-text)' }}>{couponData.message}</p>
                       </div>
-                      <button onClick={removeCoupon} className="p-1 rounded-full hover:bg-[#B5D98A]">
+                      <button onClick={removeCoupon} className="p-1 rounded-full hover:bg-[var(--tint-green-brd)]">
                         <X size={14} style={{ color:'var(--primary)' }}/>
                       </button>
                     </div>
@@ -300,8 +304,8 @@ export default function BookSession() {
 }
 
 const Step = ({ n }) => (
-  <span className="w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center text-white shrink-0"
-    style={{ background:'var(--primary)' }}>{n}</span>
+  <span className="w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shrink-0"
+    style={{ background:'var(--primary)', color:'var(--on-primary)' }}>{n}</span>
 )
 const Opt = () => (
   <span className="ml-1 normal-case tracking-normal font-normal text-xs" style={{ color:'var(--faint)' }}>(optional)</span>

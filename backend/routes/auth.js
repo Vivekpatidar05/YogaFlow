@@ -154,6 +154,12 @@ router.post('/login', [
     if (!user.isActive)
       return res.status(403).json({ success: false, message: 'Account deactivated. Contact support.' });
 
+    // Verify password BEFORE revealing verification status or sending OTP emails
+    // (otherwise anyone could spam OTP emails to an unverified account)
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch)
+      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
+
     if (!user.isEmailVerified) {
       const otp = user.generateOTP();
       await user.save({ validateBeforeSave: false });
@@ -165,10 +171,6 @@ router.post('/login', [
         email,
       });
     }
-
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch)
-      return res.status(401).json({ success: false, message: 'Invalid email or password.' });
 
     const { accessToken, refreshToken } = generateTokens(user._id);
     user.refreshTokens = [...(user.refreshTokens || []).slice(-4), refreshToken];

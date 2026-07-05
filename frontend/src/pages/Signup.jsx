@@ -147,7 +147,7 @@ export default function Signup() {
           src="https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=900&auto=format&q=80"
           alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,rgba(44,95,46,0.65) 0%,rgba(26,58,28,0.45) 100%)' }} />
+          style={{ background: 'linear-gradient(135deg,rgba(var(--primary-rgb),0.65) 0%,rgba(26,58,28,0.45) 100%)' }} />
         <div className="absolute bottom-12 left-10 right-10 text-white">
           <h2 className="font-display text-2xl font-normal mb-3">Begin Your Yoga Journey</h2>
           <p className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>
@@ -281,7 +281,7 @@ export default function Signup() {
               </Link>
               <div className="text-center mb-8 mt-4">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
-                  style={{ background: '#EAF4E0', border: '2px solid #B5D98A' }}>
+                  style={{ background: 'var(--tint-green)', border: '2px solid var(--tint-green-brd)' }}>
                   <span className="text-3xl">📧</span>
                 </div>
                 <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
@@ -308,7 +308,7 @@ export default function Signup() {
                       autoFocus={i === 0}
                       className="otp-box"
                       value={d}
-                      style={d ? { borderColor: 'var(--primary)', color: 'var(--primary)', background: '#F0F7EC' } : {}}
+                      style={d ? { borderColor: 'var(--primary)', color: 'var(--primary)', background: 'var(--tint-green-soft)' } : {}}
                       onChange={e => handleOtpChange(i, e.target.value)}
                       onKeyDown={e => {
                         if (e.key === 'Backspace' && !d && i > 0) document.getElementById(`otp-${i - 1}`)?.focus()

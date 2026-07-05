@@ -23,10 +23,10 @@ const SESSION_LEVELS = ['Beginner','Intermediate','Advanced','All Levels']
 const DAYS           = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
 const SC = {
-  confirmed:{bg:'#EAF4E0',color:'#1A5C1E'},
-  cancelled:{bg:'#FDEEE8',color:'#8C3418'},
-  completed:{bg:'#EBF5FD',color:'#1A4C8A'},
-  pending:  {bg:'#FEF3E0',color:'#7A4A10'},
+  confirmed:{bg:'var(--tint-green)',color:'var(--tint-green-text)'},
+  cancelled:{bg:'var(--tint-terra)',color:'var(--tint-terra-text)'},
+  completed:{bg:'var(--tint-blue)',color:'var(--tint-blue-text)'},
+  pending:  {bg:'var(--tint-amber)',color:'var(--tint-amber-text)'},
 }
 
 // ── Inline image picker with upload + URL fallback ────────────────────────────
@@ -212,10 +212,10 @@ export default function Admin() {
             <div className="space-y-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                  {label:'Total Users',   value:stats.totalUsers,   icon:Users,       bg:'#EBF5FD',c:'#1A4C8A'},
-                  {label:'Sessions',      value:stats.totalSessions,icon:CalendarDays,bg:'#EAF4E0',c:'var(--primary)'},
-                  {label:'Bookings',      value:stats.totalBookings,icon:BookOpen,    bg:'#FEF3E0',c:'#7A4A10'},
-                  {label:'Revenue',       value:`₹${(stats.totalRevenue||0).toLocaleString('en-IN')}`,icon:TrendingUp,bg:'#EAF4E0',c:'var(--primary)'},
+                  {label:'Total Users',   value:stats.totalUsers,   icon:Users,       bg:'var(--tint-blue)',c:'var(--tint-blue-text)'},
+                  {label:'Sessions',      value:stats.totalSessions,icon:CalendarDays,bg:'var(--tint-green)',c:'var(--primary)'},
+                  {label:'Bookings',      value:stats.totalBookings,icon:BookOpen,    bg:'var(--tint-amber)',c:'var(--tint-amber-text)'},
+                  {label:'Revenue',       value:`₹${(stats.totalRevenue||0).toLocaleString('en-IN')}`,icon:TrendingUp,bg:'var(--tint-green)',c:'var(--primary)'},
                 ].map(({label,value,icon:Icon,bg,c})=>(
                   <div key={label} className="card p-5 shadow-card">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{background:bg}}>
@@ -252,13 +252,13 @@ export default function Admin() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="card p-5 shadow-card" style={{background:'#EAF4E0',border:'1px solid #B5D98A'}}>
+                <div className="card p-5 shadow-card" style={{background:'var(--tint-green)',border:'1px solid var(--tint-green-brd)'}}>
                   <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{color:'var(--primary)'}}>Today's Bookings</p>
                   <p className="font-display text-3xl font-bold" style={{color:'var(--primary)'}}>{stats.todayBookings}</p>
                 </div>
-                <div className="card p-5 shadow-card" style={{background:'#EBF5FD',border:'1px solid #9DC8E8'}}>
-                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{color:'#1A4C8A'}}>Today's Revenue</p>
-                  <p className="font-display text-3xl font-bold" style={{color:'#1A4C8A'}}>₹{(stats.todayRevenue||0).toLocaleString('en-IN')}</p>
+                <div className="card p-5 shadow-card" style={{background:'var(--tint-blue)',border:'1px solid #9DC8E8'}}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{color:'var(--tint-blue-text)'}}>Today's Revenue</p>
+                  <p className="font-display text-3xl font-bold" style={{color:'var(--tint-blue-text)'}}>₹{(stats.todayRevenue||0).toLocaleString('en-IN')}</p>
                 </div>
               </div>
 
@@ -272,7 +272,7 @@ export default function Admin() {
                       style={{borderColor:'var(--border)'}}>
                       <div className="flex items-center gap-3">
                         <span className="w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center"
-                          style={{background:'#EAF4E0',color:'var(--primary)'}}>{i+1}</span>
+                          style={{background:'var(--tint-green)',color:'var(--primary)'}}>{i+1}</span>
                         <div>
                           <p className="text-sm font-medium" style={{color:'var(--text)'}}>{item.session?.title}</p>
                           <p className="text-xs" style={{color:'var(--muted)'}}>{item.session?.type} · by {item.session?.instructor?.name}</p>
@@ -300,7 +300,7 @@ export default function Admin() {
                       {stats.recentBookings?.map(b=>{
                         const sc=SC[b.status]||SC.pending
                         return (
-                          <tr key={b._id} className="border-t hover:bg-[#F5F8F0]" style={{borderColor:'var(--border)'}}>
+                          <tr key={b._id} className="border-t hover:bg-[var(--surface2)]" style={{borderColor:'var(--border)'}}>
                             <td className="p-3.5 font-mono text-xs font-bold" style={{color:'var(--primary)'}}>{b.bookingReference}</td>
                             <td className="p-3.5 text-sm" style={{color:'var(--text)'}}>{b.user?.firstName} {b.user?.lastName}</td>
                             <td className="p-3.5 max-w-28 truncate" style={{color:'var(--muted)'}}>{b.session?.title}</td>
@@ -351,7 +351,7 @@ export default function Admin() {
                       ) : bookings.map(b=>{
                         const sc=SC[b.status]||SC.pending
                         return (
-                          <tr key={b._id} className="border-t hover:bg-[#F5F8F0]" style={{borderColor:'var(--border)'}}>
+                          <tr key={b._id} className="border-t hover:bg-[var(--surface2)]" style={{borderColor:'var(--border)'}}>
                             <td className="p-3.5"><span className="font-mono text-xs font-bold" style={{color:'var(--primary)'}}>{b.bookingReference}</span></td>
                             <td className="p-3.5"><p className="font-medium text-sm" style={{color:'var(--text)'}}>{b.user?.firstName} {b.user?.lastName}</p><p className="text-xs" style={{color:'var(--muted)'}}>{b.user?.email}</p></td>
                             <td className="p-3.5 max-w-[160px]"><p className="truncate text-sm" style={{color:'var(--text)'}}>{b.session?.title}</p></td>
@@ -364,10 +364,10 @@ export default function Admin() {
                             <td className="p-3.5">
                               <div className="flex items-center gap-1.5">
                                 {b.status==='confirmed'&&!b.checkedIn&&(
-                                  <button onClick={()=>checkIn(b._id)} title="Check in" className="p-1.5 rounded-lg hover:bg-[#EAF4E0]" style={{color:'var(--primary)'}}><CheckSquare size={15}/></button>
+                                  <button onClick={()=>checkIn(b._id)} title="Check in" className="p-1.5 rounded-lg hover:bg-[var(--tint-green)]" style={{color:'var(--primary)'}}><CheckSquare size={15}/></button>
                                 )}
                                 {['confirmed','pending'].includes(b.status)&&(
-                                  <button title="Cancel" onClick={()=>setCM({id:b._id,label:`#${b.bookingReference}`})} className="p-1.5 rounded-lg hover:bg-[#FDEEE8]" style={{color:'var(--terra)'}}><Ban size={15}/></button>
+                                  <button title="Cancel" onClick={()=>setCM({id:b._id,label:`#${b.bookingReference}`})} className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)]" style={{color:'var(--terra)'}}><Ban size={15}/></button>
                                 )}
                               </div>
                             </td>
@@ -401,7 +401,7 @@ export default function Admin() {
                         <h3 className="font-semibold text-sm leading-tight" style={{color:'var(--text)'}}>{s.title}</h3>
                         <span className={`badge text-xs ${s.isActive?'badge-green':'badge-gray'}`}>{s.isActive?'Active':'Off'}</span>
                       </div>
-                      {s.instructor?.avatar&&<img src={s.instructor.avatar} alt="" className="w-7 h-7 rounded-full object-cover mb-2 border" style={{borderColor:'#B5D98A'}}/>}
+                      {s.instructor?.avatar&&<img src={s.instructor.avatar} alt="" className="w-7 h-7 rounded-full object-cover mb-2 border" style={{borderColor:'var(--tint-green-brd)'}}/>}
                       <p className="text-xs mb-2" style={{color:'var(--muted)'}}>{s.level} · {s.duration}min · <strong style={{color:'var(--primary)'}}>₹{s.price?.toLocaleString('en-IN')}</strong></p>
                       <p className="text-xs mb-3" style={{color:'var(--faint)'}}>{s.instructor?.name} · {s.totalBookings||0} bookings</p>
                       <div className="flex gap-2">
@@ -437,9 +437,9 @@ export default function Admin() {
                     <div key={app._id} className="card p-5 shadow-card">
                       <div className="flex items-start gap-3 mb-4">
                         {app.profilePhoto||app.user?.avatar ? (
-                          <img src={app.profilePhoto||app.user?.avatar} alt="" className="w-12 h-12 rounded-full object-cover border" style={{borderColor:'#B5D98A'}}/>
+                          <img src={app.profilePhoto||app.user?.avatar} alt="" className="w-12 h-12 rounded-full object-cover border" style={{borderColor:'var(--tint-green-brd)'}}/>
                         ) : (
-                          <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{background:'#EAF4E0',color:'var(--primary)'}}>{app.user?.firstName?.[0]}{app.user?.lastName?.[0]}</div>
+                          <div className="w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{background:'var(--tint-green)',color:'var(--primary)'}}>{app.user?.firstName?.[0]}{app.user?.lastName?.[0]}</div>
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2">
@@ -454,14 +454,14 @@ export default function Admin() {
                       {app.specialties?.length>0&&(
                         <div className="flex flex-wrap gap-1 mb-3">{app.specialties.map(s=><span key={s} className="badge badge-green text-xs">{s}</span>)}</div>
                       )}
-                      {app.adminNote&&<div className="p-2 rounded-lg mb-3" style={{background:'#FDEEE8'}}><p className="text-xs" style={{color:'var(--terra)'}}>Note: {app.adminNote}</p></div>}
+                      {app.adminNote&&<div className="p-2 rounded-lg mb-3" style={{background:'var(--tint-terra)'}}><p className="text-xs" style={{color:'var(--terra)'}}>Note: {app.adminNote}</p></div>}
                       <p className="text-xs mb-4" style={{color:'var(--faint)'}}>Applied {new Date(app.createdAt).toLocaleDateString('en-IN',{month:'long',day:'numeric',year:'numeric'})}</p>
                       {app.status==='pending'&&(
                         <div className="flex gap-2">
-                          <button onClick={()=>approveInstructor(app._id)} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-xl text-sm font-semibold" style={{background:'#EAF4E0',color:'var(--primary)',border:'1px solid #B5D98A'}}>
+                          <button onClick={()=>approveInstructor(app._id)} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-xl text-sm font-semibold" style={{background:'var(--tint-green)',color:'var(--primary)',border:'1px solid var(--tint-green-brd)'}}>
                             <CheckCircle size={14}/> Approve
                           </button>
-                          <button onClick={()=>setRM(app)} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-xl text-sm font-semibold" style={{background:'#FDEEE8',color:'var(--terra)',border:'1px solid #F5C4B3'}}>
+                          <button onClick={()=>setRM(app)} className="flex items-center gap-1.5 flex-1 justify-center py-2 rounded-xl text-sm font-semibold" style={{background:'var(--tint-terra)',color:'var(--terra)',border:'1px solid var(--tint-terra-brd)'}}>
                             <XCircle size={14}/> Reject
                           </button>
                         </div>
@@ -500,7 +500,7 @@ export default function Admin() {
                         {coupons.map(c=>{
                           const expired = new Date(c.validUntil) < new Date()
                           return (
-                            <tr key={c._id} className="border-t hover:bg-[#F5F8F0]" style={{borderColor:'var(--border)'}}>
+                            <tr key={c._id} className="border-t hover:bg-[var(--surface2)]" style={{borderColor:'var(--border)'}}>
                               <td className="p-3.5"><span className="font-mono font-bold text-sm" style={{color:'var(--primary)'}}>{c.code}</span><p className="text-xs" style={{color:'var(--muted)'}}>{c.description}</p></td>
                               <td className="p-3.5 font-semibold" style={{color:'var(--primary)'}}>{c.discountType==='percentage'?`${c.discountValue}%`:`₹${c.discountValue}`}{c.maxDiscount?<span className="text-xs font-normal ml-1" style={{color:'var(--muted)'}}>max ₹{c.maxDiscount}</span>:null}</td>
                               <td className="p-3.5" style={{color:'var(--muted)'}}>{c.minOrderValue>0?`₹${c.minOrderValue}`:'None'}</td>
@@ -509,10 +509,10 @@ export default function Admin() {
                               <td className="p-3.5"><span className={`badge text-xs ${c.isActive&&!expired?'badge-green':'badge-gray'}`}>{c.isActive&&!expired?'Active':expired?'Expired':'Inactive'}</span></td>
                               <td className="p-3.5">
                                 <div className="flex gap-1.5">
-                                  <button onClick={()=>toggleCoupon(c._id)} className="p-1.5 rounded-lg hover:bg-[#EAF4E0] transition-colors" style={{color:'var(--primary)'}} title={c.isActive?'Deactivate':'Activate'}>
+                                  <button onClick={()=>toggleCoupon(c._id)} className="p-1.5 rounded-lg hover:bg-[var(--tint-green)] transition-colors" style={{color:'var(--primary)'}} title={c.isActive?'Deactivate':'Activate'}>
                                     {c.isActive?<ToggleRight size={15}/>:<ToggleLeft size={15}/>}
                                   </button>
-                                  <button onClick={()=>deleteCoupon(c._id)} className="p-1.5 rounded-lg hover:bg-[#FDEEE8] transition-colors" style={{color:'var(--terra)'}} title="Delete"><X size={15}/></button>
+                                  <button onClick={()=>deleteCoupon(c._id)} className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)] transition-colors" style={{color:'var(--terra)'}} title="Delete"><X size={15}/></button>
                                 </div>
                               </td>
                             </tr>
@@ -541,23 +541,23 @@ export default function Admin() {
                     </thead>
                     <tbody>
                       {users.length===0?(<tr><td colSpan={7} className="text-center py-12 text-sm" style={{color:'var(--muted)'}}>No users found</td></tr>):users.map(u=>(
-                        <tr key={u._id} className="border-t hover:bg-[#F5F8F0]" style={{borderColor:'var(--border)'}}>
+                        <tr key={u._id} className="border-t hover:bg-[var(--surface2)]" style={{borderColor:'var(--border)'}}>
                           <td className="p-3.5">
                             <div className="flex items-center gap-2">
-                              {u.avatar?<img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover"/>:<div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{background:'#EAF4E0',color:'var(--primary)'}}>{u.firstName?.[0]}{u.lastName?.[0]}</div>}
+                              {u.avatar?<img src={u.avatar} alt="" className="w-8 h-8 rounded-full object-cover"/>:<div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{background:'var(--tint-green)',color:'var(--primary)'}}>{u.firstName?.[0]}{u.lastName?.[0]}</div>}
                               <span className="font-medium" style={{color:'var(--text)'}}>{u.firstName} {u.lastName}</span>
                             </div>
                           </td>
                           <td className="p-3.5" style={{color:'var(--muted)'}}>{u.email}</td>
                           <td className="p-3.5" style={{color:'var(--muted)'}}>{u.phone||'—'}</td>
                           <td className="p-3.5">
-                            <select className="text-xs rounded-lg px-2 py-1 font-semibold border outline-none capitalize" style={{background:u.role==='admin'?'#FDEEE8':u.role==='instructor'?'#EBF5FD':'#EAF4E0',color:u.role==='admin'?'var(--terra)':u.role==='instructor'?'#1A4C8A':'var(--primary)',borderColor:'transparent'}} value={u.role} onChange={e=>changeRole(u._id,e.target.value,u.firstName)}>
+                            <select className="text-xs rounded-lg px-2 py-1 font-semibold border outline-none capitalize" style={{background:u.role==='admin'?'var(--tint-terra)':u.role==='instructor'?'var(--tint-blue)':'var(--tint-green)',color:u.role==='admin'?'var(--terra)':u.role==='instructor'?'var(--tint-blue-text)':'var(--primary)',borderColor:'transparent'}} value={u.role} onChange={e=>changeRole(u._id,e.target.value,u.firstName)}>
                               <option value="user">user</option><option value="instructor">instructor</option><option value="admin">admin</option>
                             </select>
                           </td>
                           <td className="p-3.5 text-center font-bold" style={{color:'var(--primary)'}}>{u.stats?.totalBookings||0}</td>
                           <td className="p-3.5"><span className={`badge text-xs ${u.isActive?'badge-green':'badge-terra'}`}>{u.isActive?'Active':'Inactive'}</span></td>
-                          <td className="p-3.5"><button onClick={()=>toggleUser(u._id,u.firstName)} className="p-1.5 rounded-lg transition-colors" style={{color:u.isActive?'var(--terra)':'var(--primary)'}} onMouseEnter={e=>e.currentTarget.style.background=u.isActive?'#FDEEE8':'#EAF4E0'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>{u.isActive?<Ban size={15}/>:<ShieldCheck size={15}/>}</button></td>
+                          <td className="p-3.5"><button onClick={()=>toggleUser(u._id,u.firstName)} className="p-1.5 rounded-lg transition-colors" style={{color:u.isActive?'var(--terra)':'var(--primary)'}} onMouseEnter={e=>e.currentTarget.style.background=u.isActive?'var(--tint-terra)':'var(--tint-green)'} onMouseLeave={e=>e.currentTarget.style.background='transparent'}>{u.isActive?<Ban size={15}/>:<ShieldCheck size={15}/>}</button></td>
                         </tr>
                       ))}
                     </tbody>
@@ -610,7 +610,7 @@ function SessionModal({ session, onClose, onSuccess }) {
       <div className="card p-7 w-full max-w-2xl my-8 shadow-card-hover" onClick={e=>e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-xl font-semibold" style={{color:'var(--text)'}}>{isEdit?'Edit Session':'Create Session'}</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#FDEEE8]" style={{color:'var(--terra)'}}><X size={18}/></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)]" style={{color:'var(--terra)'}}><X size={18}/></button>
         </div>
         <form onSubmit={submit} className="space-y-5">
           <div className="grid grid-cols-2 gap-4">
@@ -652,7 +652,7 @@ function SessionModal({ session, onClose, onSuccess }) {
               {DAYS.map(day=>{const sel=form.scheduleInput.toLowerCase().includes(day.toLowerCase());return(
                 <button key={day} type="button" onClick={()=>{if(sel){set('scheduleInput',form.scheduleInput.split(',').filter(s=>!s.trim().toLowerCase().startsWith(day.toLowerCase())).join(', ').trim())}else{const e=form.scheduleInput.trim();set('scheduleInput',e?`${e}, ${day} 08:00`:`${day} 08:00`)}}}
                   className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
-                  style={{background:sel?'var(--primary)':'var(--surface2)',color:sel?'#fff':'var(--muted)',border:`1px solid ${sel?'var(--primary)':'var(--border)'}`}}>
+                  style={{background:sel?'var(--primary)':'var(--surface2)',color:sel?'var(--on-primary)':'var(--muted)',border:`1px solid ${sel?'var(--primary)':'var(--border)'}`}}>
                   {day.slice(0,3)}
                 </button>
               )})}
@@ -698,7 +698,7 @@ function CouponModal({ onClose, onSuccess }) {
       <div className="card p-7 w-full max-w-md shadow-card-hover" onClick={e=>e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-xl font-semibold" style={{color:'var(--text)'}}>Create Coupon</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#FDEEE8]" style={{color:'var(--terra)'}}><X size={18}/></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)]" style={{color:'var(--terra)'}}><X size={18}/></button>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div><label className="label">Coupon Code *</label><input className="input-field text-sm uppercase" value={form.code} onChange={e=>set('code',e.target.value.toUpperCase())} placeholder="e.g. YOGA20" required/></div>
@@ -725,7 +725,7 @@ function ConfirmModal({ title, message, confirmLabel, onConfirm, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{background:'rgba(0,0,0,0.45)'}}>
       <div className="card p-8 max-w-sm w-full shadow-card-hover">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{background:'#FDEEE8'}}><AlertTriangle size={22} style={{color:'var(--terra)'}}/></div>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{background:'var(--tint-terra)'}}><AlertTriangle size={22} style={{color:'var(--terra)'}}/></div>
         <h2 className="font-display text-xl font-semibold text-center mb-2" style={{color:'var(--text)'}}>{title}</h2>
         <p className="text-sm text-center mb-6" style={{color:'var(--muted)'}}>{message}</p>
         <div className="flex gap-3">

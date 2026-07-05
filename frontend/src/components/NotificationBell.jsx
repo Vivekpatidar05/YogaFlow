@@ -130,13 +130,13 @@ export default function NotificationBell() {
             <div className="flex items-center gap-1">
               {unread > 0 && (
                 <button onClick={markAllRead} title="Mark all read"
-                  className="p-1.5 rounded-lg hover:bg-[#EAF4E0] transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-[var(--tint-green)] transition-colors"
                   style={{ color: 'var(--primary)' }}>
                   <CheckCheck size={14} />
                 </button>
               )}
               <button onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-[#FDEEE8] transition-colors"
+                className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)] transition-colors"
                 style={{ color: 'var(--terra)' }}>
                 <X size={14} />
               </button>
@@ -156,14 +156,14 @@ export default function NotificationBell() {
               </div>
             ) : notifications.map(n => (
               <div key={n._id}
-                className="flex items-start gap-3 px-4 py-3 border-b cursor-pointer transition-colors"
+                className="group flex items-start gap-3 px-4 py-3 border-b cursor-pointer transition-colors"
                 style={{
                   borderColor:  'var(--border)',
-                  background:   n.read ? 'transparent' : 'rgba(44,95,46,0.03)',
+                  background:   n.read ? 'transparent' : 'rgba(var(--primary-rgb),0.03)',
                 }}
                 onClick={() => { markRead(n._id); if (n.link) window.location.href = n.link }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--surface2)'}
-                onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(44,95,46,0.03)'}
+                onMouseLeave={e => e.currentTarget.style.background = n.read ? 'transparent' : 'rgba(var(--primary-rgb),0.03)'}
               >
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-base shrink-0"
                   style={{ background: 'var(--surface2)' }}>
@@ -185,7 +185,7 @@ export default function NotificationBell() {
                   <p className="text-xs mt-1" style={{ color: 'var(--faint)' }}>{fmtTime(n.createdAt)}</p>
                 </div>
                 <button onClick={e => remove(e, n._id)}
-                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-[#FDEEE8] transition-all shrink-0"
+                  className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-[var(--tint-terra)] transition-all shrink-0"
                   style={{ color: 'var(--terra)' }}>
                   <Trash2 size={11} />
                 </button>

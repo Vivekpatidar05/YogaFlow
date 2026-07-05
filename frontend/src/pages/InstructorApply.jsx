@@ -82,8 +82,8 @@ export default function InstructorApply() {
           {application.status === 'pending' && (
             <>
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: '#FEF3E0', border: '2px solid #FACB7A' }}>
-                <Clock size={28} style={{ color: '#8C5C10' }} />
+                style={{ background: 'var(--tint-amber)', border: '2px solid var(--tint-amber-brd)' }}>
+                <Clock size={28} style={{ color: 'var(--tint-amber-text)' }} />
               </div>
               <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
                 Application Under Review
@@ -96,7 +96,7 @@ export default function InstructorApply() {
           {application.status === 'approved' && (
             <>
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: '#EAF4E0', border: '2px solid #B5D98A' }}>
+                style={{ background: 'var(--tint-green)', border: '2px solid var(--tint-green-brd)' }}>
                 <CheckCircle2 size={28} style={{ color: 'var(--primary)' }} />
               </div>
               <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
@@ -113,14 +113,14 @@ export default function InstructorApply() {
           {application.status === 'rejected' && (
             <>
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
-                style={{ background: '#FDEEE8', border: '2px solid #F5C4B3' }}>
+                style={{ background: 'var(--tint-terra)', border: '2px solid var(--tint-terra-brd)' }}>
                 <XCircle size={28} style={{ color: 'var(--terra)' }} />
               </div>
               <h1 className="font-display text-2xl font-semibold mb-2" style={{ color: 'var(--text)' }}>
                 Application Not Approved
               </h1>
               {application.adminNote && (
-                <p className="text-sm mb-4 p-3 rounded-xl" style={{ background: '#FDEEE8', color: '#8C3418' }}>
+                <p className="text-sm mb-4 p-3 rounded-xl" style={{ background: 'var(--tint-terra)', color: 'var(--tint-terra-text)' }}>
                   {application.adminNote}
                 </p>
               )}
@@ -226,7 +226,7 @@ export default function InstructorApply() {
                   className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                   style={{
                     background: form.specialties.includes(s) ? 'var(--primary)' : 'var(--surface2)',
-                    color:      form.specialties.includes(s) ? '#fff' : 'var(--muted)',
+                    color:      form.specialties.includes(s) ? 'var(--on-primary)' : 'var(--muted)',
                     border:     `1px solid ${form.specialties.includes(s) ? 'var(--primary)' : 'var(--border)'}`,
                   }}>
                   {s}

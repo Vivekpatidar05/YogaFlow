@@ -15,10 +15,10 @@ const SESSION_LEVELS = ['Beginner','Intermediate','Advanced','All Levels']
 const DAYS           = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
 
 const STATUS_COLORS = {
-  confirmed: { bg:'#EAF4E0', color:'#1A5C1E' },
-  cancelled: { bg:'#FDEEE8', color:'#8C3418' },
-  completed: { bg:'#EBF5FD', color:'#1A4C8A' },
-  pending:   { bg:'#FEF3E0', color:'#7A4A10' },
+  confirmed: { bg:'var(--tint-green)', color:'var(--tint-green-text)' },
+  cancelled: { bg:'var(--tint-terra)', color:'var(--tint-terra-text)' },
+  completed: { bg:'var(--tint-blue)', color:'var(--tint-blue-text)' },
+  pending:   { bg:'var(--tint-amber)', color:'var(--tint-amber-text)' },
 }
 
 // ── Inline image upload button ────────────────────────────────────────────────
@@ -188,10 +188,10 @@ export default function InstructorDashboard() {
               <div className="space-y-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
-                    { label:'My Sessions',    value:dashboard.totalSessions,    icon:CalendarDays, bg:'#EAF4E0', c:'var(--primary)' },
-                    { label:'Total Bookings', value:dashboard.totalBookings,    icon:Users,        bg:'#EBF5FD', c:'#1A4C8A' },
-                    { label:'Upcoming',       value:dashboard.upcomingBookings, icon:Clock,        bg:'#FEF3E0', c:'#7A4A10' },
-                    { label:'Total Revenue',  value:`₹${(dashboard.totalRevenue||0).toLocaleString('en-IN')}`, icon:TrendingUp, bg:'#EAF4E0', c:'var(--primary)' },
+                    { label:'My Sessions',    value:dashboard.totalSessions,    icon:CalendarDays, bg:'var(--tint-green)', c:'var(--primary)' },
+                    { label:'Total Bookings', value:dashboard.totalBookings,    icon:Users,        bg:'var(--tint-blue)', c:'var(--tint-blue-text)' },
+                    { label:'Upcoming',       value:dashboard.upcomingBookings, icon:Clock,        bg:'var(--tint-amber)', c:'var(--tint-amber-text)' },
+                    { label:'Total Revenue',  value:`₹${(dashboard.totalRevenue||0).toLocaleString('en-IN')}`, icon:TrendingUp, bg:'var(--tint-green)', c:'var(--primary)' },
                   ].map(({ label, value, icon:Icon, bg, c }) => (
                     <div key={label} className="card p-5 shadow-card">
                       <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background:bg }}>
@@ -214,7 +214,7 @@ export default function InstructorDashboard() {
                     ) : dashboard.recentBookings.map(b => (
                       <div key={b._id} className="flex items-center gap-3 p-4">
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                          style={{ background:'#EAF4E0', color:'var(--primary)' }}>
+                          style={{ background:'var(--tint-green)', color:'var(--primary)' }}>
                           {b.user?.firstName?.[0]}{b.user?.lastName?.[0]}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -340,12 +340,12 @@ export default function InstructorDashboard() {
                       ) : bookings.map(b => {
                         const sc = STATUS_COLORS[b.status] || STATUS_COLORS.pending
                         return (
-                          <tr key={b._id} className="border-t hover:bg-[#F5F8F0]" style={{ borderColor:'var(--border)' }}>
+                          <tr key={b._id} className="border-t hover:bg-[var(--surface2)]" style={{ borderColor:'var(--border)' }}>
                             <td className="p-3.5">
                               <div className="flex items-center gap-2">
                                 {b.user?.avatar
                                   ? <img src={b.user.avatar} alt="" className="w-7 h-7 rounded-full object-cover"/>
-                                  : <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background:'#EAF4E0',color:'var(--primary)' }}>
+                                  : <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold" style={{ background:'var(--tint-green)',color:'var(--primary)' }}>
                                       {b.user?.firstName?.[0]}{b.user?.lastName?.[0]}
                                     </div>
                                 }
@@ -368,7 +368,7 @@ export default function InstructorDashboard() {
                               {b.status === 'confirmed' && !b.checkedIn && (
                                 <button onClick={() => checkIn(b._id)}
                                   className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg font-semibold"
-                                  style={{ background:'#EAF4E0', color:'var(--primary)' }}>
+                                  style={{ background:'var(--tint-green)', color:'var(--primary)' }}>
                                   <CheckSquare size={11}/> Check In
                                 </button>
                               )}
@@ -467,7 +467,7 @@ function SessionFormModal({ session, instructorName, instructorAvatar, onClose, 
           <h2 className="font-display text-xl font-semibold" style={{ color:'var(--text)' }}>
             {isEdit ? 'Edit Session' : 'Create New Session'}
           </h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[#FDEEE8]" style={{ color:'var(--terra)' }}>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--tint-terra)]" style={{ color:'var(--terra)' }}>
             <X size={18} />
           </button>
         </div>
@@ -577,7 +577,7 @@ function SessionFormModal({ session, instructorName, instructorAvatar, onClose, 
                     className="px-2.5 py-1 rounded-full text-xs font-semibold transition-all"
                     style={{
                       background: sel ? 'var(--primary)' : 'var(--surface2)',
-                      color:      sel ? '#fff' : 'var(--muted)',
+                      color:      sel ? 'var(--on-primary)' : 'var(--muted)',
                       border:     `1px solid ${sel ? 'var(--primary)' : 'var(--border)'}`,
                     }}>
                     {day.slice(0, 3)}

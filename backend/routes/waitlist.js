@@ -14,6 +14,9 @@ router.post('/', protect, async (req, res) => {
     const { sessionId, sessionDate, sessionTime } = req.body;
     if (!sessionId || !sessionDate || !sessionTime)
       return res.status(400).json({ success: false, message: 'sessionId, sessionDate and sessionTime required.' });
+    const mongoose = require('mongoose');
+    if (!mongoose.Types.ObjectId.isValid(sessionId))
+      return res.status(400).json({ success: false, message: 'Invalid session ID.' });
 
     const session = await Session.findById(sessionId);
     if (!session) return res.status(404).json({ success: false, message: 'Session not found.' });

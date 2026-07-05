@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Menu, X, LogOut, LayoutDashboard, CalendarDays, Settings, Shield, ChevronDown, Leaf, GraduationCap } from 'lucide-react'
+import { useTheme } from '../contexts/ThemeContext'
+import { Menu, X, LogOut, LayoutDashboard, CalendarDays, Settings, Shield, ChevronDown, Leaf, GraduationCap, Sun, Moon } from 'lucide-react'
 import NotificationBell from './NotificationBell'
 
 export default function Navbar() {
   const { isAuthenticated, user, logout, isAdmin } = useAuth()
+  const { isDark, toggleTheme } = useTheme()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -38,9 +40,7 @@ export default function Navbar() {
     { to:'/dashboard',             label:'Dashboard',       auth: true },
   ]
 
-  const navBg = scrolled
-    ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-[#E8E2D9]'
-    : 'bg-white/80 backdrop-blur-sm'
+  const navBg = scrolled ? 'nav-blur-solid' : 'nav-blur'
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${navBg}`}>
@@ -51,7 +51,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2.5 group shrink-0">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
               style={{ background:'var(--primary)' }}>
-              <Leaf size={16} className="text-white" />
+              <Leaf size={16} style={{ color:"var(--on-primary)" }} />
             </div>
             <span className="font-display font-semibold text-xl" style={{ color:'var(--text)' }}>
               Yoga<span style={{ color:'var(--primary)' }}>Flow</span>
@@ -69,7 +69,7 @@ export default function Navbar() {
                   className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
                   style={{
                     color:      active ? 'var(--primary)' : 'var(--muted)',
-                    background: active ? 'rgba(44,95,46,0.08)' : 'transparent',
+                    background: active ? 'rgba(var(--primary-rgb),0.08)' : 'transparent',
                   }}>
                   {link.label}
                 </Link>
@@ -79,19 +79,24 @@ export default function Navbar() {
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center gap-2">
+            <button onClick={toggleTheme} aria-label="Toggle dark mode"
+              className="p-2 rounded-lg transition-colors hover:bg-[var(--tint-green-soft)]"
+              style={{ color:'var(--muted)' }}>
+              {isDark ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
             {isAuthenticated && <NotificationBell />}
 
             {isAuthenticated ? (
               <div className="relative" ref={dropRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-[#F0F7EC]"
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all hover:bg-[var(--tint-green-soft)]"
                   style={{ color:'var(--text)' }}>
                   {user?.avatar ? (
                     <img src={user.avatar} alt="" className="w-8 h-8 rounded-full object-cover border"
-                      style={{ borderColor:'#B5D98A' }} />
+                      style={{ borderColor:'var(--tint-green-brd)' }} />
                   ) : (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold text-white"
-                      style={{ background:'var(--primary)' }}>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold"
+                      style={{ background:'var(--primary)', color:'var(--on-primary)' }}>
                       {user?.firstName?.[0]}{user?.lastName?.[0]}
                     </div>
                   )}
@@ -119,8 +124,8 @@ export default function Navbar() {
                     {isAdmin && <DropItem to="/admin" icon={<Shield size={13}/>}>Admin Panel</DropItem>}
                     <div style={{ borderTop:'1px solid var(--border)', marginTop:4, paddingTop:4 }}>
                       <button onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors hover:bg-red-50"
-                        style={{ color:'#DC4A3A' }}>
+                        className="w-full flex items-center gap-2.5 px-4 py-2 text-sm transition-colors hover:bg-[var(--tint-terra)]"
+                        style={{ color:'var(--danger)' }}>
                         <LogOut size={13} /> Log out
                       </button>
                     </div>
@@ -137,9 +142,14 @@ export default function Navbar() {
 
           {/* Mobile toggle */}
           <div className="md:hidden flex items-center gap-2">
+            <button onClick={toggleTheme} aria-label="Toggle dark mode"
+              className="p-2 rounded-lg transition-colors hover:bg-[var(--tint-green-soft)]"
+              style={{ color:'var(--muted)' }}>
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             {isAuthenticated && <NotificationBell />}
             <button onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg transition-colors hover:bg-[#F0F7EC]"
+              className="p-2 rounded-lg transition-colors hover:bg-[var(--tint-green-soft)]"
               style={{ color:'var(--text)' }}>
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -156,7 +166,7 @@ export default function Navbar() {
               if (link.role && user?.role !== link.role && user?.role !== 'admin') return null
               return (
                 <Link key={link.to} to={link.to}
-                  className="flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-[#F0F7EC]"
+                  className="flex items-center px-4 py-3 rounded-xl text-sm font-medium transition-colors hover:bg-[var(--tint-green-soft)]"
                   style={{ color:'var(--muted)' }}>
                   {link.label}
                 </Link>
@@ -164,17 +174,17 @@ export default function Navbar() {
             })}
             {isAuthenticated ? (
               <>
-                <Link to="/profile" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[#F0F7EC]" style={{ color:'var(--muted)' }}>Profile Settings</Link>
-                {isAdmin && <Link to="/admin" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[#F0F7EC]" style={{ color:'var(--muted)' }}>Admin Panel</Link>}
+                <Link to="/profile" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[var(--tint-green-soft)]" style={{ color:'var(--muted)' }}>Profile Settings</Link>
+                {isAdmin && <Link to="/admin" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[var(--tint-green-soft)]" style={{ color:'var(--muted)' }}>Admin Panel</Link>}
                 {user?.role === 'user' && (
-                  <Link to="/instructor/apply" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[#EAF4E0]" style={{ color:'var(--primary)' }}>
+                  <Link to="/instructor/apply" className="flex items-center px-4 py-3 rounded-xl text-sm transition-colors hover:bg-[var(--tint-green)]" style={{ color:'var(--primary)' }}>
                     🧘 Become an Instructor
                   </Link>
                 )}
                 <div style={{ borderTop:'1px solid var(--border)', marginTop:8, paddingTop:8 }}>
                   <button onClick={handleLogout}
                     className="w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium"
-                    style={{ color:'#DC4A3A' }}>
+                    style={{ color:'var(--danger)' }}>
                     <LogOut size={14} className="mr-2" /> Log out
                   </button>
                 </div>
@@ -194,7 +204,7 @@ export default function Navbar() {
 
 const DropItem = ({ to, icon, children }) => (
   <Link to={to}
-    className="flex items-center gap-2.5 px-4 py-2 text-sm transition-colors hover:bg-[#F0F7EC]"
+    className="flex items-center gap-2.5 px-4 py-2 text-sm transition-colors hover:bg-[var(--tint-green-soft)]"
     style={{ color:'var(--muted)' }}>
     <span style={{ color:'var(--primary)' }}>{icon}</span>
     <span>{children}</span>

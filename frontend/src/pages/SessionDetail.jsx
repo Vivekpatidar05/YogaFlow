@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { Clock, Users, Star, ChevronRight, Calendar, MapPin, ChevronLeft, GraduationCap } from 'lucide-react'
+import { Clock, Users, Star, ChevronRight, Calendar, MapPin, ChevronLeft, GraduationCap, BellRing } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import toast from 'react-hot-toast'
 import api from '../api/axios'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -17,6 +18,22 @@ export default function SessionDetail() {
   const [reviews,  setReviews]  = useState([])
   const [loading,  setLoading]  = useState(true)
   const [selectedSlot, setSel]  = useState(null)
+  const [joiningWaitlist, setJoining] = useState(false)
+
+  const joinWaitlist = async () => {
+    if (!selectedSlot) return
+    setJoining(true)
+    try {
+      const { data } = await api.post('/waitlist', {
+        sessionId:   id,
+        sessionDate: selectedSlot.date,
+        sessionTime: selectedSlot.time,
+      })
+      toast.success(data.message)
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not join the waitlist.')
+    } finally { setJoining(false) }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -97,10 +114,10 @@ export default function SessionDetail() {
               <div className="flex items-start gap-4">
                 {session.instructor?.avatar ? (
                   <img src={session.instructor.avatar} alt={session.instructor.name}
-                    className="w-14 h-14 rounded-full object-cover border-2" style={{ borderColor:'#B5D98A' }}/>
+                    className="w-14 h-14 rounded-full object-cover border-2" style={{ borderColor:'var(--tint-green-brd)' }}/>
                 ) : (
                   <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold"
-                    style={{ background:'#EAF4E0', color:'var(--primary)', border:'2px solid #B5D98A', fontFamily:'Georgia,serif' }}>
+                    style={{ background:'var(--tint-green)', color:'var(--primary)', border:'2px solid var(--tint-green-brd)', fontFamily:'Georgia,serif' }}>
                     {session.instructor?.name?.[0]}
                   </div>
                 )}
@@ -170,7 +187,7 @@ export default function SessionDetail() {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold"
-                            style={{ background:'#EAF4E0', color:'var(--primary)' }}>
+                            style={{ background:'var(--tint-green)', color:'var(--primary)' }}>
                             {r.user?.firstName?.[0]}{r.user?.lastName?.[0]}
                           </div>
                           <div>
@@ -216,13 +233,12 @@ export default function SessionDetail() {
                 <p className="label mb-3">Available Slots</p>
                 <div className="space-y-2 max-h-60 overflow-y-auto scrollbar-hide">
                   {session.availability?.length > 0 ? session.availability.map((slot,i)=>(
-                    <button key={i} onClick={()=>setSel(slot)} disabled={slot.isFull}
+                    <button key={i} onClick={()=>setSel(slot)}
                       className="w-full text-left px-4 py-3 rounded-xl border-2 transition-all text-sm"
                       style={{
                         borderColor: selectedSlot?.date===slot.date ? 'var(--primary)' : slot.isFull ? 'var(--border)' : 'var(--border2)',
-                        background:  selectedSlot?.date===slot.date ? '#EAF4E0' : 'var(--surface)',
-                        opacity:     slot.isFull ? 0.5 : 1,
-                        cursor:      slot.isFull ? 'not-allowed' : 'pointer',
+                        background:  selectedSlot?.date===slot.date ? 'var(--tint-green)' : 'var(--surface)',
+                        opacity:     slot.isFull && selectedSlot?.date!==slot.date ? 0.6 : 1,
                       }}>
                       <div className="flex justify-between items-center">
                         <span className="font-semibold" style={{ color:'var(--text)' }}>{fmtDate(slot.date)}</span>
@@ -230,7 +246,7 @@ export default function SessionDetail() {
                       </div>
                       <p className="text-xs mt-0.5 font-medium"
                         style={{ color:slot.isFull?'var(--terra)':'var(--primary)' }}>
-                        {slot.isFull ? '⛔ Fully Booked' : `${slot.spotsLeft} spot${slot.spotsLeft!==1?'s':''} left`}
+                        {slot.isFull ? 'Full — waitlist available' : `${slot.spotsLeft} spot${slot.spotsLeft!==1?'s':''} left`}
                       </p>
                     </button>
                   )) : (
@@ -240,10 +256,19 @@ export default function SessionDetail() {
               </div>
 
               {isAuthenticated ? (
+                selectedSlot?.isFull ? (
+                  <button onClick={joinWaitlist} disabled={joiningWaitlist}
+                    className="btn-terra w-full justify-center py-3.5 gap-2">
+                    {joiningWaitlist
+                      ? <span className="spinner w-4 h-4" />
+                      : <><BellRing size={15}/> Join Waitlist</>}
+                  </button>
+                ) : (
                 <Link to={`/book/${session._id}`} state={{ slot:selectedSlot, session }}
-                  className={`btn-primary w-full justify-center py-3.5 gap-2 ${!selectedSlot||selectedSlot.isFull?'opacity-50 pointer-events-none':''}`}>
+                  className={`btn-primary w-full justify-center py-3.5 gap-2 ${!selectedSlot?'opacity-50 pointer-events-none':''}`}>
                   Book This Session <ChevronRight size={15}/>
                 </Link>
+                )
               ) : (
                 <Link to="/login" state={{ from:{ pathname:`/book/${session._id}` } }}
                   className="btn-primary w-full justify-center py-3.5 gap-2">

@@ -40,12 +40,12 @@ export default function Landing() {
           <img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=1800&auto=format&q=80"
             alt="" className="w-full h-full object-cover" style={{ opacity: 0.18 }} />
           <div className="absolute inset-0"
-            style={{ background: 'linear-gradient(135deg, rgba(240,247,236,0.97) 0%, rgba(240,247,236,0.85) 60%, rgba(240,247,236,0.7) 100%)' }} />
+            style={{ background: 'linear-gradient(135deg, rgba(var(--hero-wash-rgb),0.97) 0%, rgba(var(--hero-wash-rgb),0.85) 60%, rgba(var(--hero-wash-rgb),0.7) 100%)' }} />
         </div>
 
         {/* Decorative shapes */}
         <div className="absolute top-20 right-0 w-80 h-80 rounded-full pointer-events-none opacity-30"
-          style={{ background: 'radial-gradient(circle, #B5D98A 0%, transparent 70%)', transform: 'translateX(30%)' }} />
+          style={{ background: 'radial-gradient(circle, var(--tint-green-brd) 0%, transparent 70%)', transform: 'translateX(30%)' }} />
         <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full pointer-events-none opacity-20"
           style={{ background: 'radial-gradient(circle, #C4502A 0%, transparent 70%)', transform: 'translate(-30%, 30%)' }} />
 
@@ -53,7 +53,7 @@ export default function Landing() {
           <div className="max-w-2xl">
             {/* Pill badge */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6 border"
-              style={{ background: '#EAF4E0', borderColor: '#B5D98A', color: 'var(--primary)' }}>
+              style={{ background: 'var(--tint-green)', borderColor: 'var(--tint-green-brd)', color: 'var(--primary)' }}>
               <Leaf size={12} /> Dehradun's Premier Yoga Studio
             </div>
 
@@ -145,7 +145,7 @@ export default function Landing() {
             {STEPS.map(({ n, t, d }) => (
               <div key={n} className="relative text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl font-bold font-display relative z-10"
-                  style={{ background: '#EAF4E0', color: 'var(--primary)', border: '2px solid #B5D98A' }}>
+                  style={{ background: 'var(--tint-green)', color: 'var(--primary)', border: '2px solid var(--tint-green-brd)' }}>
                   {n}
                 </div>
                 <h3 className="font-display text-xl font-semibold mb-2" style={{ color: 'var(--text)' }}>{t}</h3>
@@ -170,7 +170,7 @@ export default function Landing() {
                 {FEATS.map(({ e, t, d }) => (
                   <div key={t} className="flex gap-4">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                      style={{ background: '#EAF4E0' }}>
+                      style={{ background: 'var(--tint-green)' }}>
                       {e}
                     </div>
                     <div>
@@ -189,7 +189,7 @@ export default function Landing() {
               {/* Floating card */}
               <div className="absolute -bottom-4 -left-4 card shadow-card-hover px-4 py-3 flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center text-base shrink-0"
-                  style={{ background: '#EAF4E0' }}>✓</div>
+                  style={{ background: 'var(--tint-green)' }}>✓</div>
                 <div>
                   <p className="text-xs font-semibold" style={{ color: 'var(--text)' }}>Booking Confirmed!</p>
                   <p className="text-xs" style={{ color: 'var(--muted)' }}>Check your inbox</p>

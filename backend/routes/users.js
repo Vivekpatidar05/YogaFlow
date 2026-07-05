@@ -18,7 +18,7 @@ router.get('/profile', protect, async (req, res) => {
 router.put('/profile', protect, [
   body('firstName').optional().trim().notEmpty().isLength({ max: 50 }),
   body('lastName').optional().trim().notEmpty().isLength({ max: 50 }),
-  body('phone').optional().isMobilePhone().withMessage('Invalid phone number')
+  body('phone').optional({ checkFalsy: true }).matches(/^[+]?[\d\s\-()]{10,15}$/).withMessage('Invalid phone number')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);

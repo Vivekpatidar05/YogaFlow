@@ -77,7 +77,7 @@ export default function Profile() {
               {/* Clickable avatar with camera overlay */}
               <label className="relative shrink-0 cursor-pointer group">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-2 transition-all group-hover:opacity-80"
-                  style={{ borderColor:'#B5D98A', background:'#EAF4E0' }}>
+                  style={{ borderColor:'var(--tint-green-brd)', background:'var(--tint-green)' }}>
                   {user?.avatar ? (
                     <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
@@ -148,9 +148,9 @@ export default function Profile() {
                 { label:'Completed',      value:user?.stats?.completedSessions||0 },
                 { label:'Cancelled',      value:user?.stats?.cancelledBookings||0 },
               ].map(({ label, value }) => (
-                <div key={label} className="text-center p-4 rounded-2xl" style={{ background:'#EAF4E0' }}>
+                <div key={label} className="text-center p-4 rounded-2xl" style={{ background:'var(--tint-green)' }}>
                   <p className="font-display text-2xl font-bold" style={{ color:'var(--primary)' }}>{value}</p>
-                  <p className="text-xs font-medium mt-0.5" style={{ color:'#3A6A1E' }}>{label}</p>
+                  <p className="text-xs font-medium mt-0.5" style={{ color:'var(--tint-green-text)' }}>{label}</p>
                 </div>
               ))}
             </div>
@@ -163,11 +163,11 @@ export default function Profile() {
 
           {/* Instructor CTA */}
           {user?.role === 'user' && (
-            <div className="card p-5 shadow-card" style={{ background:'#EAF4E0', border:'1px solid #B5D98A' }}>
+            <div className="card p-5 shadow-card" style={{ background:'var(--tint-green)', border:'1px solid var(--tint-green-brd)' }}>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <p className="font-semibold text-sm" style={{ color:'var(--primary)' }}>🧘 Become an Instructor</p>
-                  <p className="text-xs mt-0.5" style={{ color:'#3A6A1E' }}>Share your expertise with our community. Apply now!</p>
+                  <p className="text-xs mt-0.5" style={{ color:'var(--tint-green-text)' }}>Share your expertise with our community. Apply now!</p>
                 </div>
                 <Link to="/instructor/apply" className="btn-primary text-xs py-2 px-4">Apply Now →</Link>
               </div>
@@ -175,20 +175,20 @@ export default function Profile() {
           )}
 
           {user?.role === 'pending_instructor' && (
-            <div className="card p-5 shadow-card" style={{ background:'#FEF3E0', border:'1px solid #FACB7A' }}>
-              <p className="font-semibold text-sm" style={{ color:'#8C5C10' }}>⏳ Instructor Application Under Review</p>
-              <p className="text-xs mt-1" style={{ color:'#7A4A10' }}>
+            <div className="card p-5 shadow-card" style={{ background:'var(--tint-amber)', border:'1px solid var(--tint-amber-brd)' }}>
+              <p className="font-semibold text-sm" style={{ color:'var(--tint-amber-text)' }}>⏳ Instructor Application Under Review</p>
+              <p className="text-xs mt-1" style={{ color:'var(--tint-amber-text)' }}>
                 Your application is being reviewed. You'll receive a notification once a decision is made.
               </p>
             </div>
           )}
 
           {user?.role === 'instructor' && (
-            <div className="card p-5 shadow-card" style={{ background:'#EAF4E0', border:'1px solid #B5D98A' }}>
+            <div className="card p-5 shadow-card" style={{ background:'var(--tint-green)', border:'1px solid var(--tint-green-brd)' }}>
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                   <p className="font-semibold text-sm" style={{ color:'var(--primary)' }}>✅ Instructor Account</p>
-                  <p className="text-xs mt-0.5" style={{ color:'#3A6A1E' }}>You have instructor access. Manage your sessions and students.</p>
+                  <p className="text-xs mt-0.5" style={{ color:'var(--tint-green-text)' }}>You have instructor access. Manage your sessions and students.</p>
                 </div>
                 <Link to="/instructor/dashboard" className="btn-primary text-xs py-2 px-4">Instructor Dashboard →</Link>
               </div>

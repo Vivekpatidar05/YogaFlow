@@ -1,8 +1,27 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Session = require('../models/Session');
 const Booking = require('../models/Booking');
 const { protect, adminOnly } = require('../middleware/auth');
+
+// One query for the whole window instead of one countDocuments per session per day.
+// Returns a map of `${sessionId}_${localDayKey}` → active booking count.
+const dayKey = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+async function getBookingCountMap(sessionIds, windowStart, windowEnd) {
+  const rows = await Booking.find({
+    session:     { $in: sessionIds },
+    sessionDate: { $gte: windowStart, $lte: windowEnd },
+    status:      { $in: ['confirmed', 'pending'] },
+  }).select('session sessionDate').lean();
+
+  const counts = {};
+  for (const r of rows) {
+    const key = `${r.session}_${dayKey(new Date(r.sessionDate))}`;
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return counts;
+}
 
 // ── GET /api/sessions — List all sessions ────────────────────────────────────
 router.get('/', async (req, res) => {
@@ -22,9 +41,13 @@ router.get('/', async (req, res) => {
       .limit(parseInt(limit))
       .lean();
 
-    // Attach availability for next 14 days
+    // Attach availability for next 14 days (single booking query for all sessions)
     const today = new Date();
-    const enriched = await Promise.all(sessions.map(async (session) => {
+    const windowStart = new Date(today); windowStart.setHours(0, 0, 0, 0);
+    const windowEnd   = new Date(today); windowEnd.setDate(windowEnd.getDate() + 14); windowEnd.setHours(23, 59, 59, 999);
+    const countMap = await getBookingCountMap(sessions.map(s => s._id), windowStart, windowEnd);
+
+    const enriched = sessions.map((session) => {
       const upcoming = [];
       for (let i = 0; i <= 14; i++) {
         const date = new Date(today);
@@ -36,16 +59,9 @@ router.get('/', async (req, res) => {
           const [h, m] = slot.time.split(':');
           sessionDateTime.setHours(parseInt(h), parseInt(m), 0, 0);
           if (sessionDateTime > new Date()) {
-            const count = await Booking.countDocuments({
-              session: session._id,
-              sessionDate: {
-                $gte: new Date(date.setHours(0,0,0,0)),
-                $lt: new Date(date.setHours(23,59,59,999))
-              },
-              status: { $in: ['confirmed', 'pending'] }
-            });
+            const count = countMap[`${session._id}_${dayKey(date)}`] || 0;
             upcoming.push({
-              date: new Date(sessionDateTime),
+              date: sessionDateTime,
               time: slot.time,
               day: dayName,
               spotsLeft: session.maxCapacity - count,
@@ -55,7 +71,7 @@ router.get('/', async (req, res) => {
         }
       }
       return { ...session, upcoming: upcoming.slice(0, 6) };
-    }));
+    });
 
     res.json({
       success: true,
@@ -83,13 +99,20 @@ router.get('/types', async (req, res) => {
 // ── GET /api/sessions/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(404).json({ success: false, message: 'Session not found.' });
+
     const session = await Session.findById(req.params.id).lean();
     if (!session || !session.isActive) {
       return res.status(404).json({ success: false, message: 'Session not found.' });
     }
 
-    // Get availability for next 21 days
+    // Get availability for next 21 days (single booking query)
     const today = new Date();
+    const windowStart = new Date(today); windowStart.setHours(0, 0, 0, 0);
+    const windowEnd   = new Date(today); windowEnd.setDate(windowEnd.getDate() + 21); windowEnd.setHours(23, 59, 59, 999);
+    const countMap = await getBookingCountMap([session._id], windowStart, windowEnd);
+
     const availability = [];
     for (let i = 0; i <= 21; i++) {
       const date = new Date(today);
@@ -101,14 +124,7 @@ router.get('/:id', async (req, res) => {
         const [h, m] = slot.time.split(':');
         sessionDateTime.setHours(parseInt(h), parseInt(m), 0, 0);
         if (sessionDateTime > new Date()) {
-          const count = await Booking.countDocuments({
-            session: session._id,
-            sessionDate: {
-              $gte: new Date(new Date(date).setHours(0,0,0,0)),
-              $lt: new Date(new Date(date).setHours(23,59,59,999))
-            },
-            status: { $in: ['confirmed', 'pending'] }
-          });
+          const count = countMap[`${session._id}_${dayKey(date)}`] || 0;
           availability.push({
             date: sessionDateTime,
             time: slot.time,
@@ -162,6 +178,8 @@ module.exports = router;
 // ── GET /api/sessions/:id/reviews ─────────────────────────────────────────────
 router.get('/:id/reviews', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id))
+      return res.status(404).json({ success: false, message: 'Session not found.' });
     const Booking = require('../models/Booking');
     const reviews = await Booking.find({
       session: req.params.id,

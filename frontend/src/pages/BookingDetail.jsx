@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ChevronLeft, MapPin, Clock, Calendar, CreditCard, QrCode, Download } from 'lucide-react'
+import { ChevronLeft, MapPin, Clock, Calendar, CreditCard, QrCode, Download, CalendarPlus } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../api/axios'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { downloadBookingICS } from '../utils/calendar'
 
 // Simple QR code using Google Charts API (no library needed)
 function QRCodeDisplay({ value, size = 200 }) {
@@ -14,10 +15,10 @@ function QRCodeDisplay({ value, size = 200 }) {
 }
 
 const ST = {
-  confirmed: { bg:'#EAF4E0', color:'#1A5C1E' },
-  cancelled: { bg:'#FDEEE8', color:'#8C3418' },
-  completed: { bg:'#EBF5FD', color:'#1A4C8A' },
-  pending:   { bg:'#FEF3E0', color:'#7A4A10' },
+  confirmed: { bg:'var(--tint-green)', color:'var(--tint-green-text)' },
+  cancelled: { bg:'var(--tint-terra)', color:'var(--tint-terra-text)' },
+  completed: { bg:'var(--tint-blue)', color:'var(--tint-blue-text)' },
+  pending:   { bg:'var(--tint-amber)', color:'var(--tint-amber-text)' },
 }
 
 export default function BookingDetail() {
@@ -123,7 +124,7 @@ export default function BookingDetail() {
             </div>
 
             {/* Payment */}
-            <div className="p-4 rounded-xl mb-5" style={{ background:'#EAF4E0', border:'1px solid #B5D98A' }}>
+            <div className="p-4 rounded-xl mb-5" style={{ background:'var(--tint-green)', border:'1px solid var(--tint-green-brd)' }}>
               <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color:'var(--primary)' }}>
                 <CreditCard size={12}/> Payment
               </p>
@@ -135,7 +136,7 @@ export default function BookingDetail() {
                 ].map(([k,v])=>(
                   <div key={k}>
                     <p className="text-xs" style={{ color:'var(--primary)' }}>{k}</p>
-                    <p className="font-semibold text-sm" style={{ color:'#1A3A1C' }}>{v}</p>
+                    <p className="font-semibold text-sm" style={{ color:'var(--tint-green-text)' }}>{v}</p>
                   </div>
                 ))}
               </div>
@@ -143,13 +144,13 @@ export default function BookingDetail() {
 
             {/* ── QR Code section ──────────────────────────────────────────── */}
             {booking.status === 'confirmed' && (
-              <div className="card p-5 mb-5 shadow-card" style={{ background:'#F0F7EC', border:'1px solid #B5D98A' }}>
+              <div className="card p-5 mb-5 shadow-card" style={{ background:'var(--tint-green-soft)', border:'1px solid var(--tint-green-brd)' }}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <p className="font-semibold text-sm flex items-center gap-2" style={{ color:'var(--primary)' }}>
                       <QrCode size={16}/> Booking QR Code
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color:'#3A6A1E' }}>
+                    <p className="text-xs mt-0.5" style={{ color:'var(--tint-green-text)' }}>
                       Show this at the studio for quick check-in
                     </p>
                   </div>
@@ -188,32 +189,38 @@ export default function BookingDetail() {
             )}
 
             {booking.status === 'cancelled' && booking.cancellation && (
-              <div className="p-4 rounded-xl mb-4" style={{ background:'#FDEEE8', border:'1px solid #F5C4B3' }}>
+              <div className="p-4 rounded-xl mb-4" style={{ background:'var(--tint-terra)', border:'1px solid var(--tint-terra-brd)' }}>
                 <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color:'var(--terra)' }}>Cancellation</p>
-                <p className="text-sm" style={{ color:'#6C2810' }}>{booking.cancellation.reason}</p>
+                <p className="text-sm" style={{ color:'var(--tint-terra-text)' }}>{booking.cancellation.reason}</p>
               </div>
             )}
 
             {booking.feedback?.rating && (
-              <div className="p-4 rounded-xl mb-4" style={{ background:'#FEF3E0', border:'1px solid #FACB7A' }}>
-                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color:'#8C5C10' }}>Your Review</p>
+              <div className="p-4 rounded-xl mb-4" style={{ background:'var(--tint-amber)', border:'1px solid var(--tint-amber-brd)' }}>
+                <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color:'var(--tint-amber-text)' }}>Your Review</p>
                 <div className="flex gap-0.5 mb-1">
                   {[...Array(5)].map((_,i)=>(
-                    <span key={i} style={{ color:i<booking.feedback.rating?'#F59E0B':'#E8E2D9', fontSize:18 }}>★</span>
+                    <span key={i} style={{ color:i<booking.feedback.rating?'#F59E0B':'var(--border2)', fontSize:18 }}>★</span>
                   ))}
                 </div>
                 {booking.feedback.comment && (
-                  <p className="text-sm italic" style={{ color:'#7A4A10' }}>"{booking.feedback.comment}"</p>
+                  <p className="text-sm italic" style={{ color:'var(--tint-amber-text)' }}>"{booking.feedback.comment}"</p>
                 )}
               </div>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              {booking.status === 'confirmed' && !isPast && (
+                <button onClick={() => downloadBookingICS(booking, s)}
+                  className="btn-primary flex-1 justify-center text-sm py-2.5 gap-2">
+                  <CalendarPlus size={14}/> Add to Calendar
+                </button>
+              )}
               <Link to="/sessions" className="btn-outline flex-1 justify-center text-sm py-2.5">Browse Sessions</Link>
               {canCancel && (
                 <button onClick={handleCancel} disabled={cancelling}
                   className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all"
-                  style={{ borderColor:'#F5C4B3', color:'var(--terra)', background:'#FDEEE8' }}>
+                  style={{ borderColor:'var(--tint-terra-brd)', color:'var(--terra)', background:'var(--tint-terra)' }}>
                   {cancelling ? <span className="spinner w-4 h-4"/> : null}
                   {cancelling ? 'Cancelling…' : 'Cancel Booking'}
                 </button>

@@ -101,7 +101,7 @@ export default function ImageUpload({
         className={`relative ${h} rounded-xl border-2 border-dashed transition-all cursor-pointer overflow-hidden`}
         style={{
           borderColor: dragging ? 'var(--primary)' : preview ? 'var(--border)' : 'var(--border2)',
-          background:  dragging ? 'rgba(44,95,46,0.04)' : preview ? 'transparent' : 'var(--surface)',
+          background:  dragging ? 'rgba(var(--primary-rgb),0.04)' : preview ? 'transparent' : 'var(--surface)',
         }}
         onClick={() => !uploading && inputRef.current?.click()}
         onDragOver={e => { e.preventDefault(); setDragging(true) }}

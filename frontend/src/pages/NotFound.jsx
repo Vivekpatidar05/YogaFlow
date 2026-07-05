@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="min-h-[70vh] flex items-center justify-center px-4" style={{background:'var(--bg)'}}>
       <div className="text-center max-w-md">
         <div className="font-display text-[120px] font-bold leading-none select-none mb-2"
-          style={{color:'#EAF4E0'}}>
+          style={{color:'var(--tint-green)'}}>
           404
         </div>
         <h1 className="font-display text-2xl font-semibold mb-3" style={{color:'var(--text)'}}>Page Not Found</h1>

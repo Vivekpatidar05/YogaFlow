@@ -1,7 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Search, SlidersHorizontal, X } from 'lucide-react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react'
 import api from '../api/axios'
 import SessionCard from '../components/SessionCard'
+
+const SORTS = {
+  recommended:  { label: 'Recommended' },
+  'price-asc':  { label: 'Price: Low to High', fn: (a, b) => (a.price || 0) - (b.price || 0) },
+  'price-desc': { label: 'Price: High to Low', fn: (a, b) => (b.price || 0) - (a.price || 0) },
+  rating:       { label: 'Highest Rated',      fn: (a, b) => (b.rating?.average || 0) - (a.rating?.average || 0) },
+  duration:     { label: 'Shortest First',     fn: (a, b) => (a.duration || 0) - (b.duration || 0) },
+}
 
 export default function Sessions() {
   const [sessions, setSessions]   = useState([])
@@ -11,6 +19,12 @@ export default function Sessions() {
   const [loading, setLoading]     = useState(true)
   const [showFilters, setShowF]   = useState(false)
   const [pagination, setPagination] = useState({})
+  const [sort, setSort]           = useState('recommended')
+
+  const sorted = useMemo(() => {
+    const fn = SORTS[sort]?.fn
+    return fn ? [...sessions].sort(fn) : sessions
+  }, [sessions, sort])
 
   useEffect(() => {
     api.get('/sessions/types').then(r => { setTypes(r.data.types); setLevels(r.data.levels) }).catch(() => {})
@@ -62,7 +76,7 @@ export default function Sessions() {
               value={filters.search} onChange={e => sf('search', e.target.value)} />
             {filters.search && (
               <button onClick={() => sf('search', '')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-100"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-[var(--surface2)]"
                 style={{ color: 'var(--faint)' }}>
                 <X size={14} />
               </button>
@@ -74,7 +88,7 @@ export default function Sessions() {
             style={{
               borderColor: showFilters || hasFilters ? 'var(--primary)' : 'var(--border2)',
               color: showFilters || hasFilters ? 'var(--primary)' : 'var(--muted)',
-              background: showFilters || hasFilters ? 'rgba(44,95,46,0.05)' : 'transparent',
+              background: showFilters || hasFilters ? 'rgba(var(--primary-rgb),0.05)' : 'transparent',
             }}>
             <SlidersHorizontal size={15} />
             Filters
@@ -84,10 +98,22 @@ export default function Sessions() {
             )}
           </button>
 
+          <div className="relative">
+            <ArrowUpDown size={13} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+              style={{ color: sort !== 'recommended' ? 'var(--primary)' : 'var(--faint)' }} />
+            <select value={sort} onChange={e => setSort(e.target.value)}
+              className="input-field h-12 pl-9 pr-8 text-sm font-semibold cursor-pointer appearance-none w-full sm:w-auto"
+              style={{ color: sort !== 'recommended' ? 'var(--primary)' : 'var(--muted)' }}>
+              {Object.entries(SORTS).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+
           {hasFilters && (
             <button onClick={clear}
-              className="flex items-center gap-1.5 px-4 h-12 rounded-xl text-sm font-medium transition-colors hover:bg-red-50"
-              style={{ color: '#C0392B' }}>
+              className="flex items-center gap-1.5 px-4 h-12 rounded-xl text-sm font-medium transition-colors hover:bg-[var(--tint-terra)]"
+              style={{ color: 'var(--danger)' }}>
               <X size={13} /> Clear
             </button>
           )}
@@ -149,7 +175,7 @@ export default function Sessions() {
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sessions.map(s => <SessionCard key={s._id} session={s} />)}
+            {sorted.map(s => <SessionCard key={s._id} session={s} />)}
           </div>
         )}
       </div>
@@ -162,7 +188,7 @@ const Chip = ({ label, active, onClick }) => (
     className="whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
     style={{
       background:   active ? 'var(--primary)' : 'var(--surface)',
-      color:        active ? '#fff' : 'var(--muted)',
+      color:        active ? 'var(--on-primary)' : 'var(--muted)',
       border:       `1.5px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
     }}>
     {label}
@@ -171,7 +197,7 @@ const Chip = ({ label, active, onClick }) => (
 
 const ActivePill = ({ label, onRemove }) => (
   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold"
-    style={{ background: '#EAF4E0', color: 'var(--primary)', border: '1px solid #B5D98A' }}>
+    style={{ background: 'var(--tint-green)', color: 'var(--primary)', border: '1px solid var(--tint-green-brd)' }}>
     {label}
     <button onClick={onRemove} className="hover:opacity-70"><X size={11} /></button>
   </span>

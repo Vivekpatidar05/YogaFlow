@@ -45,8 +45,8 @@ export default function SessionCard({ session }) {
           <span className={`badge ${levelBadge[session.level] || 'badge-gray'}`}>{session.level}</span>
         </div>
         <div className="absolute top-3 right-3">
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white"
-            style={{ background: 'var(--primary)' }}>
+          <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+            style={{ background: 'var(--primary)', color: 'var(--on-primary)' }}>
             ₹{session.price?.toLocaleString('en-IN')}
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function SessionCard({ session }) {
         {/* Next slot */}
         {next && !isFull && (
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg mb-4"
-            style={{ background: 'rgba(44,95,46,0.06)', border: '1px solid rgba(44,95,46,0.12)' }}>
+            style={{ background: 'rgba(var(--primary-rgb),0.06)', border: '1px solid rgba(var(--primary-rgb),0.12)' }}>
             <Zap size={11} style={{ color: 'var(--primary)', flexShrink: 0 }} />
             <span className="text-xs font-medium" style={{ color: 'var(--primary)' }}>
               Next: {fmtDate(next.date)} at {next.time}

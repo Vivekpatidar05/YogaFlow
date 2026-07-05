@@ -46,10 +46,10 @@ export default function InstructorProfile() {
             {instructor.avatar ? (
               <img src={instructor.avatar} alt={`${instructor.firstName} ${instructor.lastName}`}
                 className="w-24 h-24 rounded-2xl object-cover border-2 shrink-0"
-                style={{ borderColor:'#B5D98A' }} />
+                style={{ borderColor:'var(--tint-green-brd)' }} />
             ) : (
               <div className="w-24 h-24 rounded-2xl flex items-center justify-center text-3xl font-bold shrink-0"
-                style={{ background:'#EAF4E0', color:'var(--primary)', border:'2px solid #B5D98A', fontFamily:'Georgia,serif' }}>
+                style={{ background:'var(--tint-green)', color:'var(--primary)', border:'2px solid var(--tint-green-brd)', fontFamily:'Georgia,serif' }}>
                 {instructor.firstName?.[0]}{instructor.lastName?.[0]}
               </div>
             )}

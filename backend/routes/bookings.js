@@ -67,18 +67,25 @@ router.post('/', protect, async (req, res) => {
         validFrom:  { $lte: new Date() },
         validUntil: { $gte: new Date() },
       });
-      if (coupon && !coupon.usedBy.includes(req.user._id)) {
-        if (coupon.discountType === 'percentage') {
-          discountAmount = Math.round((session.price * coupon.discountValue) / 100);
-          if (coupon.maxDiscount) discountAmount = Math.min(discountAmount, coupon.maxDiscount);
-        } else {
-          discountAmount = Math.min(coupon.discountValue, session.price);
-        }
-        finalPrice = Math.max(0, session.price - discountAmount);
-        appliedCoupon = coupon;
-        // Mark coupon as used
-        await coupon.updateOne({ $inc: { usageCount: 1 }, $push: { usedBy: req.user._id } });
+      const eligible = coupon &&
+        !coupon.usedBy.includes(req.user._id) &&
+        !(coupon.usageLimit > 0 && coupon.usageCount >= coupon.usageLimit) &&
+        !(coupon.minOrderValue > 0 && session.price < coupon.minOrderValue) &&
+        !(coupon.applicableTo === 'specific_sessions' &&
+          !coupon.sessions.map(s => s.toString()).includes(sessionId));
+      if (!eligible)
+        return res.status(400).json({ success: false, message: 'Coupon is no longer valid. Remove it and try again.' });
+
+      if (coupon.discountType === 'percentage') {
+        discountAmount = Math.round((session.price * coupon.discountValue) / 100);
+        if (coupon.maxDiscount) discountAmount = Math.min(discountAmount, coupon.maxDiscount);
+      } else {
+        discountAmount = Math.min(coupon.discountValue, session.price);
       }
+      finalPrice = Math.max(0, session.price - discountAmount);
+      appliedCoupon = coupon;
+      // Mark coupon as used
+      await coupon.updateOne({ $inc: { usageCount: 1 }, $push: { usedBy: req.user._id } });
     }
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -97,6 +104,7 @@ router.post('/', protect, async (req, res) => {
         amount:   finalPrice,
         originalAmount: session.price,
         discountAmount,
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         currency: session.currency || 'INR',
         method:   paymentMethod,
         status:   'pending',
@@ -120,6 +128,22 @@ router.post('/', protect, async (req, res) => {
 
     sendBookingConfirmation(full, user, full.session)
       .catch(e => console.error('Booking confirmation email failed:', e.message));
+
+    // Notify the instructor (if they have a user account) about the new booking
+    (async () => {
+      try {
+        const { notifyInstructorNewBooking } = require('../utils/notifications');
+        const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const [firstName, ...rest] = (session.instructor?.name || '').trim().split(/\s+/);
+        if (!firstName) return;
+        const instructorUser = await User.findOne({
+          firstName: new RegExp(`^${esc(firstName)}$`, 'i'),
+          ...(rest.length && { lastName: new RegExp(`^${esc(rest.join(' '))}$`, 'i') }),
+          role: { $in: ['instructor', 'admin'] },
+        }).select('_id').lean();
+        if (instructorUser) await notifyInstructorNewBooking(instructorUser._id, booking, session, req.user);
+      } catch (e) { console.error('Instructor notify failed:', e.message); }
+    })();
 
     res.status(201).json({
       success: true,
@@ -257,6 +281,11 @@ router.patch('/:id/cancel', protect, async (req, res) => {
       sendBookingCancellation(booking, user, booking.session)
         .catch(e => console.error('Cancel email failed:', e.message));
     }
+
+    // A spot just opened — notify the first person on the waitlist
+    const { processWaitlist } = require('./waitlist');
+    processWaitlist(booking.session._id || booking.session, booking.sessionDate)
+      .catch(e => console.error('Waitlist notify failed:', e.message));
 
     res.json({ success: true, message: 'Booking cancelled. Confirmation email sent.', booking });
 
